@@ -9,6 +9,7 @@ import struct
 import socket
 import sys
 
+# Basically sends the recieved UART data to another UDP client on localhost.
 
 class jtag_uart:
     def __init__(self, plotLength=100, ip='localhost', port=10000):
@@ -96,27 +97,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
-# Create a UDP socket
-# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-
-# server_address = ('localhost', 10000)
-# message = b'This is the message.  It will be repeated.'
-
-# try:
-
-#     # Send data
-#     print('sending {!r}'.format(message))
-#     sent = sock.sendto(message, server_address)
-
-#     # Receive response
-#     print('waiting to receive')
-#     data, server = sock.recvfrom(4096)
-#     print('received {!r}'.format(data))
-
-# finally:
-#     print('closing socket')
-#     sock.close()

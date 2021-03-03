@@ -4,10 +4,9 @@ from time import sleep
 
 
 def main():
+    # the second option is important as we sometimes might send the ASCII code for Ctrl-D (end of stream)
+    # through stdout, which would otherwise terminate the subprocess.
     inputCmd = "C:\\intelFPGA_lite\\20.1\\quartus\\bin64\\nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
-
-    log = open("log.txt", 'a')
-    log_errors = 0
 
     print("Starting subprocess")
 
@@ -17,23 +16,12 @@ def main():
     print("Subprocess started with PID ", proc.pid)
     
     # This is how we read from stdout.
-    while log_errors < 10:
+    while True:
         out = proc.stdout.readline()
-        # raw = proc.stdout.readline()
-        # out = raw[:-2]
-        # out += bytes(raw[-1]) # Get rid of the trailing \r
-        # if len(out) < 12:
-        #     out += proc.stdout.readline()
-            # raw = proc.stdout.readline()
-            # out = raw[:-1] 
-            # out += bytes(raw[-1]) # Get rid of the trailing \r
-            # log.write(str(out))
-            # log.write('\n')
-            # log_errors += 1
-            # If we get a newline character, continue to read the buffer
-
         print(out)
-        if len(out) >= 14:
+        # Barring any errors, we will always recieve 14 bytes (12 as 3 int32_t's (XYZ), and 2 from \r\n line endings.)
+        # Sometimes we get less (not sure why) so just reject those as errors.
+        if len(out) == 14:
             value_x = struct.unpack('<i', out[:4] )[0]
             value_y = struct.unpack('<i', out[4:8] )[0]
             value_z = struct.unpack('<i', out[8:12] )[0]
@@ -42,6 +30,5 @@ def main():
     proc.terminate()
     return
 
-    
 if __name__ == '__main__':
     main()

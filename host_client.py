@@ -1,6 +1,9 @@
 import socket
 import sys
 
+# Recieves data from the client. Does not do any processing of this data (yet)
+# Todo: Threading (so it doesn't block). Forwarding this data off localhost.
+
 # Create a UDP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 

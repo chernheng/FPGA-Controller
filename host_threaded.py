@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import struct
 
+# Should plot out XYZ graphs for acceleration in these three axes.
 
 class jtag_uart:
     def __init__(self, plotLength=100):
