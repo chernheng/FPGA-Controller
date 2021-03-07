@@ -1,8 +1,10 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include <ncurses.h>
-
+#include <cstdlib>
+#include <ctime>
 
 
 
@@ -22,9 +24,10 @@ namespace map {
 
   extern int player_start_x;
   extern int player_start_y;
+  extern int stations;
 }
 enum direction {UP_DIR, DN_DIR, LF_DIR, RT_DIR};
-enum {WALL_CLR=1, EMPTY_CLR, P1_CLR};
+enum {WALL_CLR=1, EMPTY_CLR, P1_CLR, STNS_CLR};
 
 // screen utils
 WINDOW *create_map_screen(int startx, int starty);
@@ -51,4 +54,14 @@ class player {
   void move(direction dir, int steps); 
 };
 
-void update_player_pos(const player &p, WINDOW * screen);             
+void update_player_pos(const player &p, WINDOW * screen);   
+
+class TaskStation {
+  public:
+  vector<int> task;
+  vector<int> x_stn;
+  vector<int> y_stn;
+
+  TaskStation();
+};
+void print_station(const TaskStation &t, WINDOW * screen);

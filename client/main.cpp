@@ -21,10 +21,21 @@ int main(int argc, char **argv) {
   print_map_to_screen(map_screen);
   wrefresh(map_screen);
   getch();
+  TaskStation t1;
+  vector<int> x = t1.x_stn;
+  vector<int> y = t1.y_stn;
 
   player p1;
   char ch;
-  while( (ch= getch()) != 'q') {
+  while((ch= getch()) != 'q') {
+    print_station(t1,map_screen);
+    vector<int>::iterator it_x = find(x.begin(),x.end(),p1.x_coord);
+    vector<int>::iterator it_y = find(y.begin(),y.end(),p1.y_coord);
+    if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
+      while(ch!='p'){
+        //execute task
+      }
+    }
     switch (ch)
     {
     case 'w':

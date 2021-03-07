@@ -36,6 +36,12 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
     mvwprintw(screen, y_pos, x_pos, ch.c_str());
     wattroff(screen, COLOR_PAIR(P1_CLR));
     break;
+
+  case 'S':
+    wattron(screen, COLOR_PAIR(STNS_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(STNS_CLR));
+    break;
   
   default:
     wattron(screen, COLOR_PAIR(EMPTY_CLR));
@@ -49,6 +55,7 @@ void init_color_pairs() {
   init_pair(WALL_CLR, COLOR_YELLOW, COLOR_BLACK);
   init_pair(EMPTY_CLR, COLOR_YELLOW, COLOR_BLACK);
   init_pair(P1_CLR, COLOR_RED, COLOR_BLACK);
+  init_pair(STNS_CLR, COLOR_GREEN, COLOR_BLACK);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
@@ -57,4 +64,10 @@ void update_player_pos(const player &p, WINDOW * screen) {
   // print new position of player
   print_char_to_screen(screen, p.x_coord, p.y_coord, 'X');
 
+}
+
+void print_station(const TaskStation &t, WINDOW * screen) {
+  for(int i =0; i < map::stations;i++){
+    print_char_to_screen(screen, t.x_stn[i], t.y_stn[i], 'S');
+  }
 }
