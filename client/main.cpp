@@ -32,23 +32,23 @@ int main(int argc, char **argv) {
     vector<int>::iterator it_x = find(x.begin(),x.end(),p1.x_coord);
     vector<int>::iterator it_y = find(y.begin(),y.end(),p1.y_coord);
     if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
-      while(ch!='p'){
+      while((ch = getch())!='p'){
         //execute task
       }
     }
     switch (ch)
     {
     case 'w':
-      p1.move(UP_DIR, 1);
+      p1.move(UP_DIR, 3);
       break;
     case 'a':
-      p1.move(LF_DIR, 1);
+      p1.move(LF_DIR, 3);
       break;
     case 's':
-      p1.move(DN_DIR, 1);
+      p1.move(DN_DIR, 3);
       break;
     case 'd':
-      p1.move(RT_DIR, 1);
+      p1.move(RT_DIR, 3);
       break;
     }
 
