@@ -100,9 +100,14 @@ void close_game(){
     //
 }
 
-int tcp_main(string server_ip){
-
-
+int main(int argc, char* argv[]){
+    if (argc>2){
+        printf("Too many arguments. Please provide only the server's IP address.\n ");
+    }
+    if (argc<2){
+        printf("Please input the server's IP address.\n");
+    }
+    string server_ip = argv[1];
     //set-up of socket for connecting to server
     if (create_connection_socket(server_ip)!=0){
         //socket is not set-up properly - TODO: what to respond with?
