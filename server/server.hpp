@@ -1,6 +1,8 @@
 #include <unistd.h> 
 #include <stdio.h> 
 #include <sys/socket.h> 
+#include <sys/select.h>
+#include <arpa/inet.h>
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
@@ -32,6 +34,8 @@ vector<sockaddr_in> clients_in_game;
 
 struct clients_info{
     vector<int> socket_descriptor;
+    vector<struct sockaddr_in> address;
+    vector<socklen_t> address_len;
     vector<char*> buffer_conn_req;
     vector<char*> buffer_send_ack;
     vector<int> buffer_send_ack_size;
@@ -52,6 +56,8 @@ struct client_server_pkt{
 };
 
 int create_connection_socket();
+
+int AcceptClient(int server_socket);
 
 int acknowledgement_packet(client_server_pkt* buffer_send);
 

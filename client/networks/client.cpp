@@ -126,7 +126,8 @@ int main(int argc, char* argv[]){
     //TODO: add timeout fn here - may be trying to connect to server when it is down
     char buffer_recv[MAX_COUNT_BYTES] = {0}; 
     int valread = read( sock , buffer_recv, MAX_COUNT_BYTES); 
-
+    //TODO:error detection
+    
     //TODO: process the packet sent by server - whether it says server is busy or connected to a game
     //if connected client to a new game: sends over display for player to click a button to indicate you are ready
     //if server is busy - receives that message
