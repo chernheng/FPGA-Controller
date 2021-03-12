@@ -2,7 +2,6 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <ncurses.h>
 #include <cstdlib>
 #include <ctime>
 
@@ -22,18 +21,19 @@ namespace map {
   extern int map_height;
   extern int map_width;
 
+  extern int info_screen_height;
+  extern int info_screen_width;
+
   extern int player_start_x;
   extern int player_start_y;
   extern int stations;
+
+  extern int playerID;
 }
 enum direction {UP_DIR, DN_DIR, LF_DIR, RT_DIR};
 enum {WALL_CLR=1, EMPTY_CLR, P1_CLR, STNS_CLR};
 
-// screen utils
-WINDOW *create_map_screen(int startx, int starty);
-void print_map_to_screen(WINDOW * screen);
-void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c);
-void init_color_pairs();
+
 
 // map utils
 bool can_occupy(int x, int y);
@@ -41,20 +41,8 @@ char get_map_char(int x, int y);
 void readmap(std::string mapfile);
 
 
-class player {
-  public:
-  int x_coord;
-  int y_coord;
 
-  int old_x_coord;
-  int old_y_coord;
-
-  player();
-
-  void move(direction dir, int steps); 
-};
-
-void update_player_pos(const player &p, WINDOW * screen);   
+ 
 
 class TaskStation {
   public:
@@ -64,4 +52,3 @@ class TaskStation {
 
   TaskStation();
 };
-void print_station(const TaskStation &t, WINDOW * screen);
