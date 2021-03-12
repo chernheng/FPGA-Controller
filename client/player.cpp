@@ -1,4 +1,5 @@
 #include "map.h"
+#include "player.h"
 
 
 player::player() {
