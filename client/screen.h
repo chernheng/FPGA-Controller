@@ -18,3 +18,5 @@ void init_color_pairs();
 
 void update_player_pos(const player &p, WINDOW * screen);   
 void print_station(const TaskStation &t, WINDOW * screen);
+
+void mark_visible_cells(int player_x, int player_y);

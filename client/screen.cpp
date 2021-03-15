@@ -78,6 +78,18 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
     wattroff(screen, COLOR_PAIR(STNS_CLR));
     break;
   
+  case 'H': // Hidden
+    wattron(screen, COLOR_PAIR(EMPTY_CLR));
+    mvwprintw(screen, y_pos, x_pos, std::string(1, ' ').c_str());
+    wattroff(screen, COLOR_PAIR(EMPTY_CLR));
+    break;
+  
+  case ' ': // Floor
+    wattron(screen, COLOR_PAIR(FLOOR_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(FLOOR_CLR));
+    break;
+  
   default:
     wattron(screen, COLOR_PAIR(EMPTY_CLR));
     mvwprintw(screen, y_pos, x_pos, ch.c_str());
@@ -89,13 +101,35 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
 void init_color_pairs() {
   init_pair(WALL_CLR, COLOR_YELLOW, COLOR_BLACK);
   init_pair(EMPTY_CLR, COLOR_YELLOW, COLOR_BLACK);
+  // init_color(COLOR_WHITE, 100, 100, 100);
+  init_pair(FLOOR_CLR, COLOR_YELLOW, COLOR_WHITE);
   init_pair(P1_CLR, COLOR_RED, COLOR_BLACK);
   init_pair(STNS_CLR, COLOR_GREEN, COLOR_BLACK);
+  init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
-  // print map character where player was
-  print_char_to_screen(screen, p.old_x_coord, p.old_y_coord, get_map_char(p.old_x_coord, p.old_y_coord));
+
+  // calculate FOV
+  mark_visible_cells(p.x_coord, p.y_coord);
+
+  // print hidden character where player was
+  print_char_to_screen(screen, p.old_x_coord, p.old_y_coord, 'H');
+
+  // remove previously visible positions
+  for (auto it : map::prev_visible_cells) {
+    // print map character where player was
+    print_char_to_screen(screen, it.first, it.second, 'H');
+  }
+  map::prev_visible_cells.clear();
+  map::prev_visible_cells = map::visible_cells;
+
+  // print visible positions
+  for (auto it : map::visible_cells) {
+    print_char_to_screen(screen, it.first, it.second, get_map_char(it.first, it.second));
+  }
+  map::visible_cells.clear();
+  
   // print new position of player
   print_char_to_screen(screen, p.x_coord, p.y_coord, 'X');
 
@@ -110,8 +144,8 @@ void print_station(const TaskStation &t, WINDOW * screen) {
 bool try_connect_server(FIELD * field[], WINDOW * form_win) {
   mvwprintw(form_win, 3, 5, "Attempting to connect...");
   wrefresh(form_win);
-  string ip = string(field_buffer(field[0], 0));
-  string name = string(field_buffer(field[1], 0));
+  std::string ip = std::string(field_buffer(field[0], 0));
+  std::string name = std::string(field_buffer(field[1], 0));
   return connect_to_server(ip, name);
 }
 

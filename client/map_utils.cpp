@@ -52,3 +52,15 @@ bool can_occupy(int x, int y) {
   }
   return true;
 }
+
+bool transparent_cell(int x, int y) {
+  char c = get_map_char(x,y);
+  switch (c)
+  {
+  case '#': return false;
+  case '\0': return false;
+
+  
+  }
+  return true;
+}
