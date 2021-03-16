@@ -648,10 +648,8 @@ int button_task(){
     while(1){
         button_datain = ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);          //read button
         button_datain &= (0b0000000001);                                 //top button gives 1
-        alt_printf("button data: %x\n", button_datain);
-
-        int seg1 = digit_to_7seg(v1);
-        int seg2 = digit_to_7seg(v2);
+        int seg1 = sev_seg(v1);
+        int seg2 = sev_seg(v2);
         IOWR_ALTERA_AVALON_PIO_DATA(HEX1_BASE, seg1); //loop
         IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg2);
 
@@ -662,7 +660,6 @@ int button_task(){
         	while(button_datain==1){
         	button_datain = ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);          //read button
             button_datain &= (0b0000000001);
-            alt_printf("button unpress %x\n",button_datain);
         	}
         }
         if(v1==0 && v2==0){return 1;}
