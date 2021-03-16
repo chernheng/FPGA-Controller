@@ -46,6 +46,7 @@ bool can_occupy(int x, int y) {
   switch (c)
   {
   case '#': return false;
+  case '+': return false;
   case '\0': return false;
 
   

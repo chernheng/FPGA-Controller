@@ -16,7 +16,9 @@ void start_ncurses() {
   int maxx, maxy;
   getmaxyx(stdscr, maxy, maxx);
   if ((maxx < map::map_width) || (maxy < map::map_height+map::info_screen_height)) {
-    printw("Your window is too small! Press any key to exit");
+    std::string msg = "Your window is too small! (" + std::to_string(maxx) + " x " + std::to_string(maxy) + "). Needs to be at least (" + \
+      std::to_string(map::map_width) + " x " + std::to_string(map::map_height) + "). Press any key to exit";
+    printw(msg.c_str());
     getch();
     endwin();
     exit(1);
@@ -77,6 +79,12 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
     mvwprintw(screen, y_pos, x_pos, ch.c_str());
     wattroff(screen, COLOR_PAIR(STNS_CLR));
     break;
+
+  case '+': // window
+    wattron(screen, COLOR_PAIR(WINDOW_CLR));
+    mvwaddch(screen, y_pos, x_pos, ACS_PLUS);
+    wattroff(screen, COLOR_PAIR(WINDOW_CLR));
+    break;
   
   case 'H': // Hidden
     wattron(screen, COLOR_PAIR(EMPTY_CLR));
@@ -106,6 +114,7 @@ void init_color_pairs() {
   init_pair(P1_CLR, COLOR_RED, COLOR_BLACK);
   init_pair(STNS_CLR, COLOR_GREEN, COLOR_BLACK);
   init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
+  init_pair(WINDOW_CLR, COLOR_BLACK, COLOR_CYAN);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
