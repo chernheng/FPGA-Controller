@@ -3,14 +3,15 @@
 #include "player.h"
 #include "connection.h"
 
+using namespace std;
 
 int main(int argc, char **argv) {
 
   // start ncurses
   start_ncurses();
-  menu_screen();
+  menu_screen(); // connect to server
 
-  // connect to server
+  
 
   
 
@@ -38,16 +39,16 @@ int main(int argc, char **argv) {
     switch (ch)
     {
     case 'w':
-      p1.move(UP_DIR, 3);
+      p1.move(UP_DIR, 1);
       break;
     case 'a':
-      p1.move(LF_DIR, 3);
+      p1.move(LF_DIR, 1);
       break;
     case 's':
-      p1.move(DN_DIR, 3);
+      p1.move(DN_DIR, 1);
       break;
     case 'd':
-      p1.move(RT_DIR, 3);
+      p1.move(RT_DIR, 1);
       break;
     }
 

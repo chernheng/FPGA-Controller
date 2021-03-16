@@ -16,7 +16,9 @@ void start_ncurses() {
   int maxx, maxy;
   getmaxyx(stdscr, maxy, maxx);
   if ((maxx < map::map_width) || (maxy < map::map_height+map::info_screen_height)) {
-    printw("Your window is too small! Press any key to exit");
+    std::string msg = "Your window is too small! (" + std::to_string(maxx) + " x " + std::to_string(maxy) + "). Needs to be at least (" + \
+      std::to_string(map::map_width) + " x " + std::to_string(map::map_height) + "). Press any key to exit";
+    printw(msg.c_str());
     getch();
     endwin();
     exit(1);
@@ -33,12 +35,30 @@ void start_ncurses() {
 
 void create_map_screen(int maxx, int maxy) {
   map_screen = newwin(map::map_height, map::map_width, 0, (maxx-map::map_width)/2);
-  box(map_screen, 0, 0);
+  // box(map_screen, 0, 0);
 }
 
 void create_info_screen(int maxx, int maxy) {
   info_screen = newwin(map::info_screen_height, map::info_screen_width, map::map_height, (maxx-map::info_screen_width)/2);
-  box(info_screen, 0, 0);
+  // box(info_screen, 0, 0);
+}
+
+void print_hidden_char(WINDOW * screen, int x, int y, char c='?') {
+
+  if (c=='?') {
+    c = get_map_char(x,y);
+  }
+
+  // print the borders
+  if ((x==map::map_width-1) || (x==0) || (y==map::map_height-1) || (y==0)) {
+    print_char_to_screen(screen, x, y, c);
+  // print certain characters
+  } else if((c=='L')) {
+    print_char_to_screen(screen, x, y, c);
+  // otherwise print Hidden char
+  } else {
+    print_char_to_screen(screen, x, y, 'H');
+  }
 }
 
 void print_map_to_screen(WINDOW * screen) {
@@ -46,9 +66,7 @@ void print_map_to_screen(WINDOW * screen) {
   for (int i=0; i<map::map_height; i++) {
 
     for (int j=0; j<map::map_width; j++) {
-      char c = map::map_array[i][j];
-      
-      print_char_to_screen(screen, j, i, c);
+      print_hidden_char(screen, j, i);
     }
 
 
@@ -78,6 +96,30 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
     wattroff(screen, COLOR_PAIR(STNS_CLR));
     break;
   
+  case 'L': // Lantern
+    wattron(screen, COLOR_PAIR(LANTERN_CLR));
+    mvwaddch(screen, y_pos, x_pos, ACS_LANTERN);
+    wattroff(screen, COLOR_PAIR(LANTERN_CLR));
+    break;
+
+  case '+': // window
+    wattron(screen, COLOR_PAIR(WINDOW_CLR));
+    mvwaddch(screen, y_pos, x_pos, ACS_PLUS);
+    wattroff(screen, COLOR_PAIR(WINDOW_CLR));
+    break;
+  
+  case 'H': // Hidden
+    wattron(screen, COLOR_PAIR(EMPTY_CLR));
+    mvwprintw(screen, y_pos, x_pos, std::string(1, ' ').c_str());
+    wattroff(screen, COLOR_PAIR(EMPTY_CLR));
+    break;
+  
+  case ' ': // Floor
+    wattron(screen, COLOR_PAIR(FLOOR_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(FLOOR_CLR));
+    break;
+  
   default:
     wattron(screen, COLOR_PAIR(EMPTY_CLR));
     mvwprintw(screen, y_pos, x_pos, ch.c_str());
@@ -89,13 +131,41 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
 void init_color_pairs() {
   init_pair(WALL_CLR, COLOR_YELLOW, COLOR_BLACK);
   init_pair(EMPTY_CLR, COLOR_YELLOW, COLOR_BLACK);
-  init_pair(P1_CLR, COLOR_RED, COLOR_BLACK);
+  init_pair(FLOOR_CLR, COLOR_YELLOW, COLOR_WHITE);
+  init_pair(P1_CLR, COLOR_RED, COLOR_WHITE);
   init_pair(STNS_CLR, COLOR_GREEN, COLOR_BLACK);
+  init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
+  init_pair(WINDOW_CLR, COLOR_BLACK, COLOR_CYAN);
+  init_pair(LANTERN_CLR, COLOR_YELLOW, COLOR_RED);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
-  // print map character where player was
-  print_char_to_screen(screen, p.old_x_coord, p.old_y_coord, get_map_char(p.old_x_coord, p.old_y_coord));
+
+  // check if player has landed on a lantern
+  if(get_map_char(p.x_coord, p.y_coord)=='L') {
+    map::map_array[p.y_coord][p.x_coord] = ' '; // remove lantern
+    map::vision_radius+=2;
+  }
+  // calculate FOV
+  mark_visible_cells(p.x_coord, p.y_coord);
+
+  // print hidden character where player was
+  print_hidden_char(screen, p.old_x_coord, p.old_y_coord);
+
+  // remove previously visible positions
+  for (auto it : map::prev_visible_cells) {
+    // print map character where player was
+    print_hidden_char(screen, it.first, it.second);
+  }
+  map::prev_visible_cells.clear();
+  map::prev_visible_cells = map::visible_cells;
+
+  // print visible positions
+  for (auto it : map::visible_cells) {
+    print_char_to_screen(screen, it.first, it.second, get_map_char(it.first, it.second));
+  }
+  map::visible_cells.clear();
+  
   // print new position of player
   print_char_to_screen(screen, p.x_coord, p.y_coord, 'X');
 
@@ -110,8 +180,8 @@ void print_station(const TaskStation &t, WINDOW * screen) {
 bool try_connect_server(FIELD * field[], WINDOW * form_win) {
   mvwprintw(form_win, 3, 5, "Attempting to connect...");
   wrefresh(form_win);
-  string ip = string(field_buffer(field[0], 0));
-  string name = string(field_buffer(field[1], 0));
+  std::string ip = std::string(field_buffer(field[0], 0));
+  std::string name = std::string(field_buffer(field[1], 0));
   return connect_to_server(ip, name);
 }
 

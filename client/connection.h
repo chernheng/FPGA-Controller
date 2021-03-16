@@ -1,3 +1,3 @@
 
 
-bool connect_to_server(string ip, string player_name);
+bool connect_to_server(std::string ip, std::string player_name);
