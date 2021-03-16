@@ -1,7 +1,6 @@
 #include "altera_avalon_fifo_regs.h"
 #include "altera_avalon_fifo_util.h"
 #include "altera_avalon_fifo.h"	// For the FIFO (talking to hardware components)
-
 #include "system.h"
 #include "altera_up_avalon_accelerometer_spi.h"
 #include "altera_avalon_jtag_uart.h"
@@ -9,11 +8,12 @@
 #include "altera_avalon_timer.h"
 #include "altera_avalon_pio_regs.h"
 #include "sys/alt_irq.h"
-#include <stdlib.h>
 #include "sys/alt_stdio.h"
-#include "alt_types.h"
+
+#include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <fcntl.h>	// Enable nonblocking
 
 
 /* ####### VARIABLE DEFINITIONS ####### */
@@ -26,9 +26,6 @@ const alt_u16 FIR_SHIFT = 19;	// number of bits to shift output FIR data
 const alt_32 acc_x_offset = 2;
 const alt_32 acc_y_offset = -10;
 const alt_32 acc_z_offset = -45;	// Offset for the accelerometer readings
-
-volatile alt_u32* uartDataRegPtr  = (alt_u32*)JTAG_UART_BASE;		// UART Data register
-volatile alt_u32* uartCntrlRegPtr = ((alt_u32*)JTAG_UART_BASE+1);	// UART Control register
 
 // Convenient way to get current state
 enum dev_state{
@@ -104,10 +101,8 @@ void accel_getdata(void* context, alt_u32 id);	// Read data from accelerometer o
 void fifo_x_getdata(void* context, alt_u32 id);	// Get data from FIFO when it's almost full
 void fifo_y_getdata(void* context, alt_u32 id);	// Get data from FIFO when it's almost full
 void fifo_z_getdata(void* context, alt_u32 id);	// Get data from FIFO when it's almost full
-void uart_getdata(void* context, alt_u32 id);	// Get data from UART when something is sent
 
 void getDirection(); 	// gets XY data and gives a array of values
-
 void timer_init();
 
 /* GAME STATES */
@@ -128,9 +123,8 @@ int main()
 
 	// Ensure that all FIR reset is held LOW
 	IOWR(FIR_RST_BASE, 0, 0b000);
-
-	// Activate interrupts on UART
-	IOWR(uartCntrlRegPtr, 0, 0x1);	// Enable JTAG IRQ
+//    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+	// To enable non-blocking (dangerous! Don't use this!)
 
 	timer_init();	// start the timer
 
@@ -188,10 +182,8 @@ int main()
 	// ## END INIT CODE ## //
 	/* Event loop never exits. */
 	while (1){
-//		uart_getdata(NULL, 0);	// nonblocking function
-		char getchar[1] = { alt_getchar() };
-		alt_u8 nios_event = atoi( getchar );  // Blocking function that doesn't work now?
-		// TODO uart interrupt would be good here.
+		char get_char[1] = { alt_getchar() };
+		alt_u8 nios_event = atoi( get_char );
 
         getDirection();
 
@@ -357,12 +349,6 @@ void fifo_z_getdata(void* context, alt_u32 id){
 	altera_avalon_fifo_clear_event(INPUT_FIFO_Z_IN_CSR_BASE, ALTERA_AVALON_FIFO_EVENT_ALL); // Clear FIFO event
 
 	alt_irq_enable_all(irq_context);	// Re enable interrupts afterwards
-}
-
-// Interrupt handler for JTAG-UART events
-void uart_getdata(void* context, alt_u32 id){
-	alt_u32 jtag_status = *uartDataRegPtr;
-	host_to_nios_event  = jtag_status & 0xFF;		// UART Data register
 }
 
 // Helper function turns numbers into 7-segment info
