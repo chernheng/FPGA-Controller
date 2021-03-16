@@ -9,7 +9,7 @@
 //#include "sys/alt_stdio.h"
 
 //TODO: task timeout, resend task request?, adjust delay,
-//      filter x,y,z ; random number(get val from timer? or server)  dont need to filter z?
+//      filter x,y,z
 //      input,output from host
 
 //GAME STATES
@@ -53,12 +53,13 @@ int x_move(){          //todo: filter, is loop needed?, remove delay?
     return  x_direc;
 }
 
-int y_move(){ return 3; } //TODO:same as x
+int y_move(){ return 1;}
 
-int led_switch_task(){   //TODO:randomize led_value 1-1023
+
+int led_switch_task(){
     alt_printf  ("led_switch_task") ;
 
-    int led_value = 200;
+    int led_value = rng();
     int switch_datain;
 
     int led_to_switch = -(led_value+1);
@@ -75,10 +76,10 @@ int led_switch_task(){   //TODO:randomize led_value 1-1023
 
 }
 
-int button_task(){      //TODO:1023 random value
+int button_task(){
     alt_printf  ("button_task\n") ;
    // printf("button_task");
-    int random_value = 700;  //try 300 104 99 1023 999
+    int random_value = rng();
 
     int value=3;
     if(random_value > 900){value = 9; random_value=0;}
@@ -114,10 +115,10 @@ int button_task(){      //TODO:1023 random value
     }
 }
 
-int random_number_task(){   //1 is msb  //TODO:random value
+int random_number_task(){
     alt_printf  ("random_number_task") ;
 
-    int random_value = 700;
+    int random_value = rng();
     int led_to_switch = -(random_value + 1);
 
     int d1=0,d2=0,d3=0,d4=0;
@@ -153,20 +154,24 @@ int random_number_task(){   //1 is msb  //TODO:random value
 
 }
 
-int increment_task(){  //TODO: random value 0 to 99??
+int increment_task(){  //TODO: check if random works in actual implementation, the delay is a bit scuffed, u can go over the value
     alt_printf  ("increment\n") ;
-    //button 1 +1
-    // button 2 + 10
 
 
-    int random_value = 25;
-    int desired_value = random_value;
+    int random_value = rng();
+    int v1=0, v2=0;
+
+
     int curr1=0;
     int curr2=0;
     int d3=0,d4=0;
 
-    while(random_value>=10){d3++; random_value -= 10; }
-    while(random_value>0){d4++; random_value -= 1; }
+    while(random_value>=100){d3++; random_value -=100;}
+    while(random_value>=10){d4++; random_value -=10;}
+
+    if(d3>9){d3=9;}
+
+    int desired_value = d3*10 + d4;
 
     int seg3 = digit_to_7seg(d3);
     int seg4 = digit_to_7seg(d4);
@@ -201,12 +206,12 @@ int increment_task(){  //TODO: random value 0 to 99??
     	IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg2);
     	IOWR_ALTERA_AVALON_PIO_DATA(HEX1_BASE, seg1);
 
-    	for(int k=0; k<500000;k++){;}  //needed delay
+    	for(int k=0; k<200000;k++){;}  //needed delay
 
     	int current = curr1*10 + curr2;
     	if(current==desired_value){return 1;}
 
-    	alt_printf("curr1 %x, curr2 %x, current, %x\n",curr1,curr2,current);
+    	alt_printf("curr1 %x, curr2 %x, current %x, desired %x\n",curr1,curr2,current,desired_value);
 
     }
 
@@ -252,7 +257,7 @@ int z_axis_task(){  //TODO: change to z-axis //could change/remove?? delay
 
 
 
-    return 1;
+   return 1;
 
 
 }
@@ -267,7 +272,20 @@ int endgame(){ //TODO:idk what we want here
 //MISC
 int read_accel_x();   //TODO?: seperate function for filtering??
 
-int rng(); //TODO: is it possible to get timer count value?
+int rng(){ 
+	IOWR(TIMER_BASE,4,1);
+	int value = IORD_ALTERA_AVALON_TIMER_SNAPL(TIMER_BASE);
+//	for(int i=0; i<10; i++){
+	//	IOWR(TIMER_BASE,4,1);
+	//	int rand = IORD_ALTERA_AVALON_TIMER_SNAPL(TIMER_BASE);
+	//	alt_printf("random %x\n", rand);
+	//}
+	alt_printf("iord timer: %x\n", value);
+
+
+	return value;
+
+}
 
 void reset_function(){
     alt_printf  ("reset\n") ;
@@ -327,6 +345,37 @@ return display;
 
 }
 
+void timer_init() {
+	/*
+	 * Timer Control Register:
+	 * b3: STOP: Writing a 1 to STOP stops the internal counter (state change)
+	 * b2: START: Writing a 1 to STOP starts the internal counter (state change)
+	 * b1: CONT:1: timer runs continuously till being stopped by STOP bit
+	 * 			0: timer stops automatically after reaching 0
+	 * b0: ITO: Interrupt enable.
+	 * 			1: generates IRQ if Status register's TO bit is 1
+	 * 			0: No IRQs
+	 *
+	 */
+    IOWR_ALTERA_AVALON_TIMER_CONTROL(TIMER_BASE, 0x0002);  //11
+    // continuous, no irq
+
+    IOWR_ALTERA_AVALON_TIMER_STATUS(TIMER_BASE, 0);
+    // Clears the TO bit in status register, just in case
+
+    IOWR_ALTERA_AVALON_TIMER_PERIODL(TIMER_BASE, 0x02FF);
+    IOWR_ALTERA_AVALON_TIMER_PERIODH(TIMER_BASE, 0x0000);
+    // Timeout period: 0x0000'09000=2304d clock cycles
+    // Given that the clock speed is 50MHz then means that the LED's are written to at around 21.7kHz
+
+    //alt_irq_register(TIMER_IRQ, 0, isr);
+    // Registers the interrupt handler
+
+    IOWR_ALTERA_AVALON_TIMER_CONTROL(TIMER_BASE, 0x0007); //111
+    // Write 0x7=0b0111 to start the timer
+
+}
+
 
 int main(){
 
@@ -339,7 +388,7 @@ int main(){
     	reset_function();   //TODO: diff start setting for 7seg??
 
 
-        int STATE=6; //TODO: wait until receive state from host
+        int STATE=5; //TODO: wait until receive state from host
 
        // alt_printf  ("gimme an input, 7 to exit") ;
         //std::cin >> STATE;
@@ -347,7 +396,7 @@ int main(){
         int complete=0;							//NOTE: should initial values change?
         int x_direc=0, y_direc=0, z_direc=0;   //TODO: we actually dont need z_direc
 
-
+        timer_init();
 
 
         switch (STATE){
@@ -357,6 +406,7 @@ int main(){
             case 1:
                 x_direc = x_move();
                 y_direc = y_move();
+                complete =1;
                 break;
             case 2:
                 complete = led_switch_task();       //match switch to led
@@ -390,7 +440,7 @@ int main(){
 
 
         //TODO: remove return for continuous
-        return 1;
+       //return 1;
 
 
 
@@ -398,19 +448,3 @@ int main(){
 
     }
 }
-
-
-//use timer for rng??
-//https://www.intel.com/content/www/us/en/programmable/documentation/dmi1455632999173.html - doesnt work for de10?
-
-/* Send data over the JTAG_UART connection
- * Format:
-* 0: BTN[0]{MSB} SWITCH[9:0] {LSB}
-* 1: ACC_X [31:0]
-* 2: ACC_Y [31:0]
-* 3: ACC_Z [31:0]
-* 4: OTHER[31:0]
-* 5: '\n' delimiter [reserved]
-*/
-
-//add \n
