@@ -12,6 +12,7 @@ struct sockaddr_in serv_address;
 int addrlen = sizeof(address);
 clients_info clients;
 vector<string> player_names;
+player players[2];
 
 //function to set up socket connection
 int create_connection_socket()
@@ -226,10 +227,8 @@ int game_start_packet(client_server_pkt *buffer_send)
     return buffer_send_size;
 }
 
-//for testing
-int game_loop = 0;
 
-int game_process_packet(client_server_pkt *buffer_send, player *players, int user_id)
+int game_process_packet(client_server_pkt *buffer_send)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
@@ -244,18 +243,18 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int use
     //testing
     switch (usr)
     {
-        case 'w':
-        players[0].move(UP_DIR, 1);
-        break;
-        case 'a':
-        players[0].move(LF_DIR, 1);
-        break;
+        // case 'w':
+        // players[0].move(UP_DIR, 1);
+        // break;
+        // case 'a':
+        // players[0].move(LF_DIR, 1);
+        // break;
         case 's':
         players[0].move(DN_DIR, 1);
         break;
-        case 'd':
-        players[0].move(RT_DIR, 1);
-        break;
+        // case 'd':
+        // players[0].move(RT_DIR, 1);
+        // break;
     }
     send_packet.x_coord[0] = players[0].x_coord;
     send_packet.y_coord[0] = players[0].y_coord;
@@ -508,8 +507,6 @@ int main()
         //     t1[i] = TaskStation(i);
         // }
 
-        player players[2];
-
         while (sent_pkt_type != GAME_END_PKT)
         {
             for (int i = 0; i < clients.socket_descriptor.size(); i++)
@@ -574,7 +571,7 @@ int main()
                 int buffer_send_game_size;
                 //clients.buffer_send_game.push_back(&buffer_send_game);
                 //clients.buffer_send_game_size.push_back(buffer_send_game_size);
-                buffer_send_game_size = game_process_packet(&buffer_send_game, players,i);
+                buffer_send_game_size = game_process_packet(&buffer_send_game);
                 //send game in process corrd and display to client
                 //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
                 if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
@@ -595,6 +592,5 @@ int main()
         }
 
 	clients = {};
-    game_loop=0;
     }
 }

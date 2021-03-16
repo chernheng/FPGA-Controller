@@ -75,7 +75,7 @@ int acknowledgement_packet(client_server_pkt* buffer_send);
 
 int game_start_packet(client_server_pkt* buffer_send);
 
-int game_process_packet(client_server_pkt* buffer_send, player *players, int user_id);
+int game_process_packet(client_server_pkt* buffer_send);
 
 int reject_packet(client_server_pkt* buffer_send);
 
