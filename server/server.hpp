@@ -53,6 +53,8 @@ struct clients_info{
 struct client_server_pkt{
     char client_mac_address[14];
     uint8_t packet_type;
+    char ch;
+    string name;
     //TODO: add on what is needed
 
 };

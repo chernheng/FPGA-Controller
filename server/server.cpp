@@ -10,6 +10,7 @@ struct sockaddr_in address;
 struct sockaddr_in serv_address;
 int addrlen = sizeof(address);
 clients_info clients;
+vector<string> player_names;
 
 //function to set up socket connection
 int create_connection_socket()
@@ -208,12 +209,14 @@ int acknowledgement_packet(client_server_pkt *buffer_send)
     buffer_send_size = sizeof(send_packet);
     return buffer_send_size;
 }
-
+char no_of_users = 0;
 int game_start_packet(client_server_pkt *buffer_send)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
     send_packet.packet_type = GAME_START_PKT;
+    send_packet.ch = no_of_users;
+    no_of_users++;
 
     //to set-up packet_fields
 
@@ -233,10 +236,14 @@ int game_process_packet(client_server_pkt *buffer_send)
 
     //to set-up packet_fields
     //testing
-    game_loop++;
-    if (game_loop >= 7)
-    {
-        send_packet.packet_type = GAME_END_PKT;
+    char usr;
+    cin >> usr;
+    send_packet.ch = usr;
+    
+    //to set-up packet_fields
+    //testing
+    if (usr=='p'){
+	    send_packet.packet_type = GAME_END_PKT;
     }
 
     *buffer_send = send_packet;
@@ -536,6 +543,7 @@ int main()
                 //     //if client times-out - goes back to start of loop? (maybe case structure)
                 // }
             }
+            while(1){
             for (int i = 0; i < clients.socket_descriptor.size(); i++)
             {
                 //sends game display during game
@@ -554,6 +562,7 @@ int main()
                 
                 sent_pkt_type = process_packet((char *)&buffer_send_game);
                 printf("loop number: %d\n", i);
+            }
             }
         }
 
