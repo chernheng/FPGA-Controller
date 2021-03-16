@@ -14,6 +14,7 @@ class player {
   player();
 
   void move(direction dir, int steps); 
+  void newCoord(int x, int y);
 };
 
  

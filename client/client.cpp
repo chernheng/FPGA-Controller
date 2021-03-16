@@ -248,10 +248,13 @@ char process_game_start(char* buffer_recv_game_start, int buffer_size){
     
 }
 
-player process_game(char* buffer_recv_game, int buffer_size){
+void process_game(char* buffer_recv_game, int buffer_size, player *players){
     client_server_pkt* pkt_received = (client_server_pkt*)buffer_recv_game;
-    player f = pkt_received->players;
-    return f;
+    int *x_loc = pkt_received->x_coord;
+    int *y_loc = pkt_received->y_coord;
+    for(int i = 0 ; i<2;i++){
+        players[i].newCoord(x_loc[i],y_loc[i]);
+    }
 }
 
 
@@ -363,8 +366,7 @@ int main(int argc, char* argv[]){
     vector<int> x = t1[0].x_stn;
     vector<int> y = t1[0].y_stn;
 
-    player players;
-
+    player players[2];
 
     while(pkt_type!=GAME_END_PKT){
         //buffer_recv_game = 0; 
@@ -390,18 +392,18 @@ int main(int argc, char* argv[]){
         // printf("Received udp packets from server\n");
         pkt_type = process_packet(buffer_recv_game);
         if (pkt_type==GAME_PROCESS_PKT){
-            players = process_game(buffer_recv_game, MAX_COUNT_BYTES); 
+            process_game(buffer_recv_game, MAX_COUNT_BYTES, players); 
             while(1) {
                 print_station(t1[user_id],map_screen);
-                vector<int>::iterator it_x = find(x.begin(),x.end(),players.x_coord);
-                vector<int>::iterator it_y = find(y.begin(),y.end(),players.y_coord);
+                vector<int>::iterator it_x = find(x.begin(),x.end(),players[0].x_coord);
+                vector<int>::iterator it_y = find(y.begin(),y.end(),players[0].y_coord);
                 if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
                 // while(getch !='p'){
                 //     //execute task
                 //     }
                 }
 
-                update_player_pos(players, map_screen);
+                update_player_pos(players[0], map_screen);
                 wrefresh(map_screen);
                 if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
                     printf("Error in receiving udp packet\n");
@@ -409,7 +411,7 @@ int main(int argc, char* argv[]){
                     exit(EXIT_FAILURE);
                 }
                 pkt_type = process_packet(buffer_recv_game);
-                players = process_game(buffer_recv_game, MAX_COUNT_BYTES); 
+                process_game(buffer_recv_game, MAX_COUNT_BYTES, players); 
                 if (pkt_type==GAME_END_PKT){
                     endwin();
                     break;
