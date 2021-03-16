@@ -28,7 +28,7 @@ int main(int argc, char **argv) {
   player p1;
   char ch;
   while((ch= getch()) != 'q') {
-    // print_station(t1,map_screen);
+    print_station(t1,map_screen);
     vector<int>::iterator it_x = find(x.begin(),x.end(),p1.x_coord);
     vector<int>::iterator it_y = find(y.begin(),y.end(),p1.y_coord);
     if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
