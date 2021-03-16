@@ -13,7 +13,7 @@ import sys
 
 class jtag_uart:
     def __init__(self, plotLength=100, ip='localhost', port=10000):
-        inputCmd = "C:\\intelFPGA_lite\\20.1\\quartus\\bin64\\nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
+        inputCmd = "C:\\intelFPGA_lite\\19.1\\quartus\\bin64\\nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
         self.plotMaxLength = plotLength
         self.previousTimer = 0
         self.data_x = collections.deque([0] * plotLength, maxlen=plotLength)
