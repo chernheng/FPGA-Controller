@@ -66,8 +66,6 @@ void print_map_to_screen(WINDOW * screen) {
   for (int i=0; i<map::map_height; i++) {
 
     for (int j=0; j<map::map_width; j++) {
-      // char c = map::map_array[i][j];
-      
       print_hidden_char(screen, j, i);
     }
 
@@ -143,6 +141,11 @@ void init_color_pairs() {
 
 void update_player_pos(const player &p, WINDOW * screen) {
 
+  // check if player has landed on a lantern
+  if(get_map_char(p.x_coord, p.y_coord)=='L') {
+    map::map_array[p.y_coord][p.x_coord] = ' '; // remove lantern
+    map::vision_radius+=2;
+  }
   // calculate FOV
   mark_visible_cells(p.x_coord, p.y_coord);
 

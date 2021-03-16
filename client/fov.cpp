@@ -151,7 +151,7 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
         search_y = search_y_tmp; search_x = search_x_tmp;
       }
 
-
+      // skip if beyond map borders
       if ((search_x<0) || (search_x>=map::map_width) || (search_y<0) || (search_y>=map::map_height)) {continue;}
 
       // calculate slope
@@ -161,8 +161,11 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
       // if square is too much to the right, break
       if (current_slopes.first < end_slope) {break;}
 
-      // make this square visible
-      map::visible_cells.emplace_back(search_x, search_y);
+      // make this square visible if it is within radius (x-a)^2 + (y-b)^2 = r^2
+      if ((search_x-player_x)*(search_x-player_x)+(search_y-player_y)*(search_y-player_y) <= radius*radius) {
+        map::visible_cells.emplace_back(search_x, search_y);
+      }
+      
 
       // check if this square is transparent
       bool cell_is_transparent = transparent_cell(search_x, search_y);
