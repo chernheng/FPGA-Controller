@@ -34,14 +34,14 @@ void readmap(std::string mapfile) {
 
 }
 
-char get_map_char(int x, int y) {
+char get_map_char(const int &x, const int &y) {
   if ((x>map::map_width) || (y>map::map_height) || (x<0) || (y<0)) {
     return '\0';
   }
   return map::map_array[y][x];
 }
 
-bool can_occupy(int x, int y) {
+bool can_occupy(const int &x, const int &y) {
   char c = get_map_char(x,y);
   switch (c)
   {
@@ -54,7 +54,7 @@ bool can_occupy(int x, int y) {
   return true;
 }
 
-bool transparent_cell(int x, int y) {
+bool transparent_cell(const int &x, const int &y) {
   char c = get_map_char(x,y);
   switch (c)
   {

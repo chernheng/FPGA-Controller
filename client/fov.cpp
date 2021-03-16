@@ -152,7 +152,7 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
       }
 
 
-      if ((search_x<0) || (search_x>map::map_width) || (search_y<0) || (search_y>map::map_height)) {continue;}
+      if ((search_x<0) || (search_x>=map::map_width) || (search_y<0) || (search_y>=map::map_height)) {continue;}
 
       // calculate slope
       pair<float, float> current_slopes = calculate_slope(search_x, search_y, player_x, player_y, octant);

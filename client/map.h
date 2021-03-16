@@ -34,14 +34,15 @@ namespace map {
   extern int playerID;
 }
 enum direction {UP_DIR, DN_DIR, LF_DIR, RT_DIR};
-enum {WALL_CLR=1, EMPTY_CLR, P1_CLR, STNS_CLR, VISIBLE_CLR, FLOOR_CLR, WINDOW_CLR};
+enum {WALL_CLR=1, EMPTY_CLR, P1_CLR, STNS_CLR, VISIBLE_CLR, FLOOR_CLR, WINDOW_CLR, \
+      LANTERN_CLR};
 
 
 
 // map utils
-bool can_occupy(int x, int y);
-bool transparent_cell(int x, int y);
-char get_map_char(int x, int y);
+bool can_occupy(const int &x, const int &y);
+bool transparent_cell(const int &x, const int &y);
+char get_map_char(const int &x, const int &y);
 void readmap(std::string mapfile);
 
 

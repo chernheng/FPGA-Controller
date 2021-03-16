@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 
   // read map
   readmap("maps/map1.txt");
-  // print_map_to_screen(map_screen);
+  print_map_to_screen(map_screen);
   wrefresh(map_screen);
 
   getch();
