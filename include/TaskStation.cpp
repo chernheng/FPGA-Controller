@@ -10,7 +10,7 @@ TaskStation::TaskStation(int n) {
     rand_x = (rand() % 150) +4;
     rand_y = (rand() % 35)+2;
     rand_task = rand() % 5;
-    if (can_occupy(rand_x, rand_y)) {
+    if (map::map_array[rand_y][rand_x]==' ') {
       x_stn.push_back(rand_x);
       y_stn.push_back(rand_y);
       task.push_back(rand_task);
