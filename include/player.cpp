@@ -65,3 +65,9 @@ void player::move(direction dir, int steps) {
     
   
 }
+void player::newCoord(int x, int y){
+  old_x_coord = x_coord;
+  old_y_coord = y_coord;
+  x_coord = x;
+  y_coord = y;
+}

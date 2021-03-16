@@ -229,7 +229,7 @@ int game_start_packet(client_server_pkt *buffer_send)
 //for testing
 int game_loop = 0;
 
-int game_process_packet(client_server_pkt *buffer_send, player players, int user_id)
+int game_process_packet(client_server_pkt *buffer_send, player *players, int user_id)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
@@ -245,19 +245,20 @@ int game_process_packet(client_server_pkt *buffer_send, player players, int user
     switch (usr)
     {
         case 'w':
-        players.move(UP_DIR, 1);
+        players[0].move(UP_DIR, 1);
         break;
         case 'a':
-        players.move(LF_DIR, 1);
+        players[0].move(LF_DIR, 1);
         break;
         case 's':
-        players.move(DN_DIR, 1);
+        players[0].move(DN_DIR, 1);
         break;
         case 'd':
-        players.move(RT_DIR, 1);
+        players[0].move(RT_DIR, 1);
         break;
     }
-    send_packet.players = players;
+    send_packet.x_coord[0] = players[0].x_coord;
+    send_packet.y_coord[0] = players[0].y_coord;
     if (usr=='p'){
 	    send_packet.packet_type = GAME_END_PKT;
     }
@@ -507,7 +508,7 @@ int main()
         //     t1[i] = TaskStation(i);
         // }
 
-        player players;
+        player players[2];
 
         while (sent_pkt_type != GAME_END_PKT)
         {
