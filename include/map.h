@@ -31,7 +31,6 @@ namespace map {
   extern int player_start_y;
   extern int stations;
 
-  extern int playerID;
 }
 enum direction {UP_DIR, DN_DIR, LF_DIR, RT_DIR};
 enum {WALL_CLR=1, EMPTY_CLR, P1_CLR, STNS_CLR, VISIBLE_CLR, FLOOR_CLR, WINDOW_CLR, \

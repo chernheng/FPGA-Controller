@@ -2,6 +2,8 @@
 #include "map.h"
 #include <form.h>
 #include "connection.h"
+#include "game_loop.h"
+#include "player.h"
 
 // global vars
 WINDOW * map_screen;
@@ -132,6 +134,11 @@ void init_color_pairs() {
   init_pair(WALL_CLR, COLOR_YELLOW, COLOR_BLACK);
   init_pair(EMPTY_CLR, COLOR_YELLOW, COLOR_BLACK);
   init_pair(FLOOR_CLR, COLOR_YELLOW, COLOR_WHITE);
+  init_pair(P0_CLR, COLOR_RED, COLOR_WHITE);
+  init_pair(P1_CLR, COLOR_RED, COLOR_WHITE);
+  init_pair(P1_CLR, COLOR_RED, COLOR_WHITE);
+  init_pair(P1_CLR, COLOR_RED, COLOR_WHITE);
+  init_pair(P1_CLR, COLOR_RED, COLOR_WHITE);
   init_pair(P1_CLR, COLOR_RED, COLOR_WHITE);
   init_pair(STNS_CLR, COLOR_GREEN, COLOR_BLACK);
   init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
@@ -168,6 +175,22 @@ void update_player_pos(const player &p, WINDOW * screen) {
   
   // print new position of player
   print_char_to_screen(screen, p.x_coord, p.y_coord, 'X');
+
+}
+
+
+void update_other_player_pos() {
+  for (int i=0; i<6; i++) {
+    if (i==game::player_index) {continue;}
+    player p = game::players[i];
+    if (p.is_used) {
+      // show on screen if within FOV
+      if (std::find(map::prev_visible_cells.begin(), map::prev_visible_cells.end(), std::make_pair(p.x_coord, p.y_coord)) \
+          != map::prev_visible_cells.end() ) {
+            print_char_to_screen(map_screen, p.x_coord, p.y_coord, std::to_string(i)[0]);
+          }
+    }
+  }
 
 }
 

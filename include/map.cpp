@@ -17,5 +17,4 @@ namespace map {
 
   int stations = 4;
 
-  int playerID=0;
 }
