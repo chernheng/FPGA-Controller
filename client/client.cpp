@@ -391,7 +391,7 @@ int main(int argc, char* argv[]){
         pkt_type = process_packet(buffer_recv_game);
         if (pkt_type==GAME_PROCESS_PKT){
             players = process_game(buffer_recv_game, MAX_COUNT_BYTES); 
-            while(getch() != 'q') {
+            while(1) {
                 print_station(t1[user_id],map_screen);
                 vector<int>::iterator it_x = find(x.begin(),x.end(),players.x_coord);
                 vector<int>::iterator it_y = find(y.begin(),y.end(),players.y_coord);
