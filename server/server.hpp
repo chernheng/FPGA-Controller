@@ -11,8 +11,10 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-#include "map.h"
-#include "player.h"
+#include "../include/screen.h"
+#include "../include/map.h"
+#include "../include/player.h"
+#include "../include/connection.h"
 
 #define PORT   8080 
 
