@@ -11,6 +11,8 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
+#include "map.h"
+#include "player.h"
 
 #define PORT   8080 
 
@@ -53,6 +55,9 @@ struct clients_info{
 struct client_server_pkt{
     char client_mac_address[14];
     uint8_t packet_type;
+    char ch;
+    string name;
+    player players;
     //TODO: add on what is needed
 
 };
@@ -67,7 +72,7 @@ int acknowledgement_packet(client_server_pkt* buffer_send);
 
 int game_start_packet(client_server_pkt* buffer_send);
 
-int game_process_packet(client_server_pkt* buffer_send);
+int game_process_packet(client_server_pkt* buffer_send, player players, int user_id);
 
 int reject_packet(client_server_pkt* buffer_send);
 

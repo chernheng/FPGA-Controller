@@ -1,8 +1,4 @@
 #include "client.hpp"
-#include "screen.h"
-#include "map.h"
-#include "player.h"
-#include "connection.h"
 #define PORT 8080 
 
 using namespace std;
@@ -234,7 +230,7 @@ int process_packet(char* buffer_recv){
     int pkt_type;
     client_server_pkt* pkt_received = (client_server_pkt*)buffer_recv;
     pkt_type = pkt_received->packet_type;
-    printf("Packet received: %d\n", pkt_type);
+    // printf("Packet received: %d\n", pkt_type);
     return pkt_type;
 }
 
@@ -252,9 +248,10 @@ char process_game_start(char* buffer_recv_game_start, int buffer_size){
     
 }
 
-char process_game(char* buffer_recv_game, int buffer_size){
+player process_game(char* buffer_recv_game, int buffer_size){
     client_server_pkt* pkt_received = (client_server_pkt*)buffer_recv_game;
-    return pkt_received->ch;
+    player f = pkt_received->players;
+    return f;
 }
 
 
@@ -354,7 +351,7 @@ int main(int argc, char* argv[]){
 
     }
     start_ncurses();
-    menu_screen();
+    // menu_screen();
     // read map
     readmap("maps/map1.txt");
     print_map_to_screen(map_screen);
@@ -366,25 +363,21 @@ int main(int argc, char* argv[]){
     vector<int> x = t1[0].x_stn;
     vector<int> y = t1[0].y_stn;
 
-    player p1[2];
-    // for (int i =0; i<2;i++){
-    //   p1[i] = player();
-    // }
-    char input;
+    player players;
 
 
     while(pkt_type!=GAME_END_PKT){
         //buffer_recv_game = 0; 
         //send game input to server
         buffer_send_input_size = game_input_packet(&buffer_send_input, mac_address);
-        printf("Sending packets on udp\n");
+        // printf("Sending packets on udp\n");
         //send(udp_sockfd , (char *)&buffer_send_input , buffer_send_input_size , 0 ); 
         if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
             printf("Error in sending udp packet\n");
             cout << strerror(errno) << '\n';
             exit(EXIT_FAILURE);
         }
-        printf("Sent udp packet of game input\n");
+        // printf("Sent udp packet of game input\n");
 
         socklen_t len = sizeof(serv_addr_udp);
         //receive client's coord. and other players' coord.
@@ -394,40 +387,29 @@ int main(int argc, char* argv[]){
             cout << strerror(errno) << '\n';
             exit(EXIT_FAILURE);
         }
-        printf("Received udp packets from server\n");
+        // printf("Received udp packets from server\n");
         pkt_type = process_packet(buffer_recv_game);
         if (pkt_type==GAME_PROCESS_PKT){
-            input = process_game(buffer_recv_game, MAX_COUNT_BYTES); 
-            while(input != 'q') {
+            players = process_game(buffer_recv_game, MAX_COUNT_BYTES); 
+            while(1) {
                 print_station(t1[user_id],map_screen);
-                vector<int>::iterator it_x = find(x.begin(),x.end(),p1[user_id].x_coord);
-                vector<int>::iterator it_y = find(y.begin(),y.end(),p1[user_id].y_coord);
+                vector<int>::iterator it_x = find(x.begin(),x.end(),players.x_coord);
+                vector<int>::iterator it_y = find(y.begin(),y.end(),players.y_coord);
                 if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
-                while(input !='p'){
-                    //execute task
-                    }
-                }
-                switch (input)
-                {
-                case 'w':
-                p1[user_id].move(UP_DIR, 1);
-                break;
-                case 'a':
-                p1[user_id].move(LF_DIR, 1);
-                break;
-                case 's':
-                p1[user_id].move(DN_DIR, 1);
-                break;
-                case 'd':
-                p1[user_id].move(RT_DIR, 1);
-                break;
+                // while(getch !='p'){
+                //     //execute task
+                //     }
                 }
 
-                update_player_pos(p1[user_id], map_screen);
+                update_player_pos(players, map_screen);
                 wrefresh(map_screen);
-                valread_game = read( sock , buffer_recv_game, MAX_COUNT_BYTES);
+                if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
+                    printf("Error in receiving udp packet\n");
+                    cout << strerror(errno) << '\n';
+                    exit(EXIT_FAILURE);
+                }
                 pkt_type = process_packet(buffer_recv_game);
-                input = process_game(buffer_recv_game, MAX_COUNT_BYTES); 
+                players = process_game(buffer_recv_game, MAX_COUNT_BYTES); 
                 if (pkt_type==GAME_END_PKT){
                     endwin();
                     break;
