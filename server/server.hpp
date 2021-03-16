@@ -11,7 +11,6 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-#include "screen.h"
 #include "map.h"
 #include "player.h"
 

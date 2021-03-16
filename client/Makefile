@@ -17,3 +17,4 @@ dir:
 
 clean:
 	rm -rf build
+	rm client
