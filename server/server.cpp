@@ -229,7 +229,7 @@ int game_start_packet(client_server_pkt *buffer_send)
 //for testing
 int game_loop = 0;
 
-int game_process_packet(client_server_pkt *buffer_send, player *players, int user_id)
+int game_process_packet(client_server_pkt *buffer_send, player players, int user_id)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
@@ -245,16 +245,16 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int use
     switch (usr)
     {
         case 'w':
-        players[user_id].move(UP_DIR, 1);
+        players.move(UP_DIR, 1);
         break;
         case 'a':
-        players[user_id].move(LF_DIR, 1);
+        players.move(LF_DIR, 1);
         break;
         case 's':
-        players[user_id].move(DN_DIR, 1);
+        players.move(DN_DIR, 1);
         break;
         case 'd':
-        players[user_id].move(RT_DIR, 1);
+        players.move(RT_DIR, 1);
         break;
     }
     send_packet.players = players;
@@ -507,10 +507,7 @@ int main()
         //     t1[i] = TaskStation(i);
         // }
 
-        player players[2];
-        for (int i =0; i<2;i++){
-            players[i] = player();
-        }
+        player players;
 
         while (sent_pkt_type != GAME_END_PKT)
         {
