@@ -5,7 +5,7 @@ from time import sleep
 def main():
     # the second option is important as we sometimes might send the ASCII code for Ctrl-D (end of stream)
     # through stdout, which would otherwise terminate the subprocess.
-    inputCmd = "C:\\intelFPGA_lite\\19.1\\quartus\\bin64\\nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
+    inputCmd = "C:\\intelFPGA_lite\\20.1\\quartus\\bin64\\nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
 
     print("Starting subprocess")
 
