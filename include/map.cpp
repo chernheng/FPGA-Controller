@@ -12,8 +12,8 @@ namespace map {
   int info_screen_height=5;
   int info_screen_width=200;
 
-  int player_start_x=4;
-  int player_start_y=2;
+  int player_start_x=10;
+  int player_start_y=5;
 
   int stations = 4;
 

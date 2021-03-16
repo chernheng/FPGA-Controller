@@ -36,7 +36,6 @@ struct client_server_pkt{
     char client_mac_address[14]; //to differentiate btwn different clients on the same network
     uint8_t packet_type;
     char ch;
-    string name;
     int x_coord[2];
     int y_coord[2];
     //TODO: add on what is needed

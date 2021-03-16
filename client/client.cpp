@@ -404,6 +404,7 @@ int main(int argc, char* argv[]){
                 }
 
                 update_player_pos(players[0], map_screen);
+                update_player_pos(players[1], map_screen);
                 wrefresh(map_screen);
                 if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
                     printf("Error in receiving udp packet\n");
