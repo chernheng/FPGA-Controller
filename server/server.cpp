@@ -12,7 +12,7 @@ struct sockaddr_in serv_address;
 int addrlen = sizeof(address);
 clients_info clients;
 vector<string> player_names;
-player players[2];
+
 
 //function to set up socket connection
 int create_connection_socket()
@@ -228,7 +228,7 @@ int game_start_packet(client_server_pkt *buffer_send)
 }
 
 
-int game_process_packet(client_server_pkt *buffer_send)
+int game_process_packet(client_server_pkt *buffer_send, player *players)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
@@ -506,6 +506,10 @@ int main()
         // for (int i = 0; i<3;i++){
         //     t1[i] = TaskStation(i);
         // }
+        player players[2];
+        for (int i = 0; i<2;i++){
+            players[i] = player();
+        }
 
         while (sent_pkt_type != GAME_END_PKT)
         {
@@ -571,7 +575,7 @@ int main()
                 int buffer_send_game_size;
                 //clients.buffer_send_game.push_back(&buffer_send_game);
                 //clients.buffer_send_game_size.push_back(buffer_send_game_size);
-                buffer_send_game_size = game_process_packet(&buffer_send_game);
+                buffer_send_game_size = game_process_packet(&buffer_send_game, players);
                 //send game in process corrd and display to client
                 //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
                 if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
