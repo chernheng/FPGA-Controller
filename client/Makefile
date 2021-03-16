@@ -2,14 +2,14 @@ CCARGS=-c -std=c++14 -O3
 LDARGS=-g
 
 # Files for parse tree traversal
-CLIENT_SRC_FILES := $(wildcard ./*.cpp)
-CLIENT_OBJ_FILES := $(patsubst ./%.cpp,build/%.o,$(CLIENT_SRC_FILES))
+CLIENT_SRC_FILES := $(wildcard ../include/*.cpp)
+CLIENT_OBJ_FILES := $(patsubst ../include/%.cpp,build/%.o,$(CLIENT_SRC_FILES))
 
 client : dir $(CLIENT_OBJ_FILES)
-	g++ $(LDARGS) $(CLIENT_OBJ_FILES) -lform -lncurses -o client
+	g++ $(LDARGS) $(CLIENT_OBJ_FILES) clientmain.cpp -lform -lncurses -o client
 	chmod u+x client
 
-build/%.o : %.cpp
+build/%.o : ../include/%.cpp
 	g++ $(CCARGS) $< -o $@ 
 
 dir:
@@ -17,3 +17,4 @@ dir:
 
 clean:
 	rm -rf build
+	rm -f client
