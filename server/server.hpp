@@ -5,6 +5,7 @@
 #include <arpa/inet.h>
 #include <stdlib.h> 
 #include <netinet/in.h> 
+#include <net/if.h>	//ifreq
 #include <string.h> 
 #include <string>
 #include <iostream>
@@ -50,12 +51,15 @@ struct clients_info{
 };
 
 struct client_server_pkt{
+    char client_mac_address[14];
     uint8_t packet_type;
     //TODO: add on what is needed
 
 };
 
 int create_connection_socket();
+
+int create_udp_connection_socket();
 
 int AcceptClient(int server_socket);
 
@@ -81,6 +85,3 @@ void process_game_start(char* buffer_recv_game_start, int buffer_size);
 void process_game(char* buffer_recv_game, int buffer_size);
 
 void close_game();
-
-
-

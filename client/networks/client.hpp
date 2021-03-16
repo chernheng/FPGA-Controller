@@ -1,10 +1,17 @@
+#include <unistd.h> 
 #include <stdio.h> 
 #include <sys/socket.h> 
-#include <arpa/inet.h> 
-#include <unistd.h> 
-#include <cstdint>
+#include <sys/select.h>
+#include <arpa/inet.h>
+#include <stdlib.h> 
+#include <netinet/in.h> 
+#include <sys/ioctl.h>
+#include <net/if.h>	//ifreq
 #include <string.h> 
 #include <string>
+#include <iostream>
+#include <vector>
+#include <unordered_map>
 #define PORT 8080 
 
 using namespace std;
@@ -22,6 +29,7 @@ using namespace std;
 #define GAME_END_PKT           7
 
 struct client_server_pkt{
+    char client_mac_address[14]; //to differentiate btwn different clients on the same network
     uint8_t packet_type;
     //TODO: add on what is needed
 
@@ -29,11 +37,15 @@ struct client_server_pkt{
 
 int create_connection_socket(string server_ip);
 
-int connection_request_packet(client_server_pkt* buffer_send);
+int create_udp_connection_socket(string server_ip);
 
-int player_ready_packet(client_server_pkt* buffer_send);
+int get_mac_address(char *mac_address);
 
-int game_input_packet(client_server_pkt* buffer_send);
+int connection_request_packet(client_server_pkt* buffer_send, char *mac_address);
+
+int player_ready_packet(client_server_pkt* buffer_send, char *mac_address);
+
+int game_input_packet(client_server_pkt* buffer_send, char *mac_address);
 
 int process_packet(char* buffer_recv);
 

@@ -4,8 +4,10 @@ using namespace std;
 
 //initialising sock variable
 int server_fd = 0;
+int udp_fd = 0;
 int new_socket = 0;
 struct sockaddr_in address;
+struct sockaddr_in serv_address;
 int addrlen = sizeof(address);
 clients_info clients;
 
@@ -54,6 +56,62 @@ int create_connection_socket()
     return 1;
 }
 
+int create_udp_connection_socket()
+{
+    //int udp_fd; 
+    //char buffer[MAXLINE]; 
+    //char *hello = "Hello from server"; 
+    // struct sockaddr_in servaddr, cliaddr; 
+    int opt =1;
+      
+    // Creating socket file descriptor 
+    if ( (udp_fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0 ) { 
+        perror("socket creation failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+      
+    memset(&serv_address, 0, sizeof(serv_address)); 
+    // memset(&cliaddr, 0, sizeof(cliaddr)); 
+      
+    // Filling server information 
+    serv_address.sin_family    = AF_INET; // IPv4 
+    serv_address.sin_addr.s_addr = INADDR_ANY; 
+    serv_address.sin_port = htons(PORT); 
+
+    // Forcefully attaching socket to the port 8080
+    if (setsockopt(udp_fd, SOL_SOCKET, SO_REUSEADDR | SO_REUSEPORT,
+                   &opt, sizeof(opt)))
+    {
+        perror("setsockopt");
+        exit(EXIT_FAILURE);
+    }
+      
+    // Bind the socket with the server address 
+    if ( bind(udp_fd, (const struct sockaddr *)&serv_address,  
+            sizeof(serv_address)) < 0 ) 
+    { 
+        perror("bind failed"); 
+        exit(EXIT_FAILURE); 
+    } 
+      
+    // int n;
+    // socklen_t len; 
+  
+    // len = sizeof(cliaddr);  //len is value/resuslt 
+  
+    // n = recvfrom(udp_fd, (char *)buffer, MAXLINE,  
+    //             MSG_WAITALL, ( struct sockaddr *) &cliaddr, 
+    //             &len); 
+    // buffer[n] = '\0'; 
+    // printf("Client : %s\n", buffer); 
+    // sendto(udp_fd, (const char *)hello, strlen(hello),  
+    //     MSG_CONFIRM, (const struct sockaddr *) &cliaddr, 
+    //         len); 
+    // printf("Hello message sent.\n");  
+      
+    return 0; 
+}
+
 int AcceptClient(int server_socket)
 {
     fd_set readfds;
@@ -97,6 +155,7 @@ int AcceptClient(int server_socket)
         else if (iResult == 0)
         {
             printf("No additional clients connecting\n");
+            printf("====================================\n\n");
             break;
         }
         else if (iResult > 0)
@@ -128,8 +187,8 @@ int AcceptClient(int server_socket)
         }
         printf("Finished reading into buffer\n");
         retVal = 1;
-        //until server detects max number of clients/players - set to 10 for now
-        if (client_number == 10)
+        //until server detects max number of clients/players
+        if (client_number == 6)
         {
             break;
         }
@@ -203,7 +262,21 @@ int process_packet(char *buffer_recv)
     int pkt_type;
     client_server_pkt *pkt_received = (client_server_pkt *)buffer_recv;
     pkt_type = pkt_received->packet_type;
-    printf("Packet received: %d\n", pkt_type);
+    if (pkt_type == 1 || pkt_type == 3 || pkt_type == 5){
+        printf("Packet received: %d\n", pkt_type);
+    //printf("Client's MAC address: %s\n", pkt_received->client_mac_address);
+    char mac[18];
+    sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", 
+            (unsigned char)pkt_received->client_mac_address[0],
+            (unsigned char)pkt_received->client_mac_address[1],
+            (unsigned char)pkt_received->client_mac_address[2],
+            (unsigned char)pkt_received->client_mac_address[3],
+            (unsigned char)pkt_received->client_mac_address[4],
+            (unsigned char)pkt_received->client_mac_address[5]);
+    printf("mac address: %s\n", mac);
+    } else {
+        printf("Packet sent: %d\n", pkt_type);
+    }
     return pkt_type;
 }
 
@@ -213,6 +286,7 @@ int process_connection_request(char *buffer_conn_req)
     //if after timeout fn and no other player connects - error msg - dont ack player
     //timeout fn to be set in either main fn or ack packet
     //clients_connected.push_back(address);
+    
     if (clients.socket_descriptor.size() < 2)
     {
         printf("Waiting for other players to connect...\n");
@@ -235,7 +309,7 @@ int process_ready(char *buffer_recv, int buffer_size)
 
 int process_usr_input(char *buffer_usr_input, int buffer_size)
 {
-    return 0;
+    return 1;
 }
 
 void process_game_start(char *buffer_recv_game_start, int buffer_size)
@@ -254,12 +328,20 @@ void close_game()
 
 int main()
 {
-    printf("setting up socket\n");
+    printf("Setting up TCP socket\n");
+    printf("====================================\n");
 
     if (create_connection_socket() != 1)
     {
         //socket is not set-up properly - TODO: what to respond with?
     }
+
+    printf("\nSetting up UDP socket\n");
+    printf("====================================\n");
+    if (create_udp_connection_socket() != 1)
+        {
+            //socket is not set-up properly - TODO: what to respond with?
+        }
 
     while (1)
     {
@@ -270,7 +352,8 @@ int main()
             perror("accept");
             exit(EXIT_FAILURE);
         }
-        printf("Finished setting up socket.\n");
+        printf("\nFinished setting up socket.\n");
+        printf("====================================\n\n");
         //read in clients's ip address?
         clients.address.push_back(address);
         clients.address_len.push_back(addrlen);
@@ -324,40 +407,43 @@ int main()
             }
         }
 
-        char buffer_send_ack;
-        int buffer_send_ack_size;
-        char buffer_send_game_start;
-        int buffer_send_game_start_size;
+        // char buffer_send_ack;
+        // int buffer_send_ack_size;
+        // char buffer_send_game_start;
+        // int buffer_send_game_start_size;
         char buffer_send_game;
         int buffer_send_game_size;
 
         for (int i = 0; i < clients.socket_descriptor.size(); i++)
         {
             printf("Processing client number: %d\n", i);
-            clients.buffer_send_ack.push_back(&buffer_send_ack);
-            clients.buffer_send_ack_size.push_back(buffer_send_ack_size);
+            client_server_pkt buffer_send_ack;
+            int buffer_send_ack_size;
+            // clients.buffer_send_ack.push_back(&buffer_send_ack);
+            // clients.buffer_send_ack_size.push_back(buffer_send_ack_size);
 
-            clients.buffer_send_ack_size[i] = acknowledgement_packet((client_server_pkt *)clients.buffer_send_ack[i]);
+            buffer_send_ack_size = acknowledgement_packet(&buffer_send_ack);
 
             //send ack packet to client
-            send(clients.socket_descriptor[i], clients.buffer_send_ack[i], clients.buffer_send_ack_size[i], 0);
+            send(clients.socket_descriptor[i], (char *)&buffer_send_ack, buffer_send_ack_size, 0);
             printf("Acknowledge packet sent\n");
         }
         for (int i = 0; i < clients.socket_descriptor.size(); i++)
         {
             //receive play ready packet from client
-            clients.buffer_ready.push_back(empty_buffer);
-            if ((read(clients.socket_descriptor[i], clients.buffer_ready[i], MAX_COUNT_BYTES)) < 0)
+            //clients.buffer_ready.push_back(empty_buffer);
+            char recv_buffer_ready[1024];
+            if ((read(clients.socket_descriptor[i], recv_buffer_ready, MAX_COUNT_BYTES)) < 0)
             {
                 printf("Error in reading received bytes\n");
             }
 
             //TODO: process the packet sent by client - whether client has indicated they are ready before timeout fn
             //else, remove them from the global vector of connected clients
-            pkt_type = process_packet(clients.buffer_ready[i]);
+            pkt_type = process_packet(recv_buffer_ready);
             if (pkt_type == PLAYER_READY_PKT)
             {
-                if (process_ready(clients.buffer_ready[i], 1024) != 1)
+                if (process_ready(recv_buffer_ready, 1024) != 1)
                 {
                     //if client times-out - goes back to start of loop? (maybe case structure)
                 }
@@ -372,37 +458,61 @@ int main()
         {
             //send game start packet
             //set-up connection game-start coord. and game start display
-            clients.buffer_send_game_start.push_back(&buffer_send_game_start);
-            clients.buffer_send_game_start_size.push_back(buffer_send_game_start_size);
-            clients.buffer_send_game_start_size[i] = game_start_packet((client_server_pkt *)clients.buffer_send_game_start[i]);
+            client_server_pkt buffer_send_game_start;
+            int buffer_send_game_start_size;
+            // clients.buffer_send_game_start.push_back(&buffer_send_game_start);
+            // clients.buffer_send_game_start_size.push_back(buffer_send_game_start_size);
+            buffer_send_game_start_size = game_start_packet(&buffer_send_game_start);
             //send game start coord and display to client
-            send(clients.socket_descriptor[i], clients.buffer_send_game_start[i], clients.buffer_send_game_start_size[i], 0);
+            send(clients.socket_descriptor[i], (char *)&buffer_send_game_start, buffer_send_game_start_size, 0);
             printf("Game start coordinates and game display sent\n");
-            sent_pkt_type = process_packet(clients.buffer_send_game_start[i]);
+            sent_pkt_type = process_packet((char *)&buffer_send_game_start);
         }
         // sendto(server_fd, clients.buffer_send_game_start[i], clients.buffer_send_game_start_size[i], MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
         //         len);
 
+        
+
+
         struct sockaddr_in cliaddr; 
         memset(&cliaddr, 0, sizeof(cliaddr)); 
         socklen_t len = sizeof(cliaddr);
+        vector<sockaddr_in> vec_cliaddr;
+        vector<socklen_t> vec_cliaddr_len;
+
         while (sent_pkt_type != GAME_END_PKT)
         {
             for (int i = 0; i < clients.socket_descriptor.size(); i++)
             {
                 clients.buffer_usr_input.push_back(empty_buffer);
-                if ((read(clients.socket_descriptor[i], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0)
-                {
-                    printf("Error in reading received bytes\n");
-                }
-                // char buffer_usr_input[MAX_COUNT_BYTES] = {0};
-                // int n = recvfrom(server_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&cliaddr, &len);
-
-                // for (int i=0; i<clients.socket_descriptor.size(); i++){
-                //     if(clients.address[i].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
-                //         printf("TODO\n");
-                //     }
+                // if ((read(clients.socket_descriptor[i], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0)
+                // {
+                //     printf("Error in reading received bytes\n");
                 // }
+                printf("Attempting to receive udp game input packets from client...\n");
+                int n;
+                vec_cliaddr.push_back(cliaddr);
+                vec_cliaddr_len.push_back(sizeof(cliaddr));
+                if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[i], &vec_cliaddr_len[i])<0){
+                    printf("Error in udp bytes received\n");
+                }
+                //clients.buffer_usr_input[i][n] = '\0';
+                // if(n<0){
+                    
+                // }else if (n==0){
+                //     printf("No udp bytes received\n");
+                // }
+                printf("Receive udp game input packets from client\n");
+                clients.buffer_usr_input[i][n]='\0';
+                for (int i=0; i<clients.socket_descriptor.size(); i++){
+                    if(clients.address[i].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
+                        printf("Processing user input\n");
+                        if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
+                        {
+                            //if client times-out - goes back to start of loop? (maybe case structure)
+                        }
+                    }
+                }
                 // printf("%s\n", inet_ntoa(clients.address[i].sin_addr));
                 //check whether received packet is from clients that are currently in the game
                 //TODO: client_in_game struct - unordered map? <client_address, player number?>
@@ -421,20 +531,28 @@ int main()
 
                 // }
 
-                if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
-                {
-                    //if client times-out - goes back to start of loop? (maybe case structure)
-                }
+                // if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
+                // {
+                //     //if client times-out - goes back to start of loop? (maybe case structure)
+                // }
             }
             for (int i = 0; i < clients.socket_descriptor.size(); i++)
             {
                 //sends game display during game
-                clients.buffer_send_game.push_back(&buffer_send_game);
-                clients.buffer_send_game_size.push_back(buffer_send_game_size);
-                clients.buffer_send_game_size[i] = game_process_packet((client_server_pkt *)clients.buffer_send_game[i]);
+                client_server_pkt buffer_send_game;
+                int buffer_send_game_size;
+                //clients.buffer_send_game.push_back(&buffer_send_game);
+                //clients.buffer_send_game_size.push_back(buffer_send_game_size);
+                buffer_send_game_size = game_process_packet(&buffer_send_game);
                 //send game in process corrd and display to client
-                send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
-                sent_pkt_type = process_packet(clients.buffer_send_game[i]);
+                //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
+                if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
+                    perror("sending udp bytes failed"); 
+                    exit(EXIT_FAILURE); 
+                    //printf("Error in udp bytes sent\n");
+                }
+                
+                sent_pkt_type = process_packet((char *)&buffer_send_game);
                 printf("loop number: %d\n", i);
             }
         }
