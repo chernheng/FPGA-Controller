@@ -1,6 +1,7 @@
 #include "../include/screen.h"
 #include "../include/player.h"
 #include "../include/connection.h"
+#include "../include/map.h"
 
 using namespace std;
 

@@ -57,7 +57,7 @@ struct client_server_pkt{
     uint8_t packet_type;
     char ch;
     string name;
-    player* players;
+    player players;
     //TODO: add on what is needed
 
 };
@@ -72,7 +72,7 @@ int acknowledgement_packet(client_server_pkt* buffer_send);
 
 int game_start_packet(client_server_pkt* buffer_send);
 
-int game_process_packet(client_server_pkt* buffer_send, player *players, int user_id);
+int game_process_packet(client_server_pkt* buffer_send, player players, int user_id);
 
 int reject_packet(client_server_pkt* buffer_send);
 
