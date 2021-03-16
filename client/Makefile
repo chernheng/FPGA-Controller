@@ -1,4 +1,4 @@
-CCARGS=-c -std=c++14
+CCARGS=-c -std=c++14 -O3
 LDARGS=-g
 
 # Files for parse tree traversal

@@ -35,22 +35,37 @@ using namespace std;
 namespace map {
   vector<pair<int, int>> visible_cells;
   vector<pair<int, int>> prev_visible_cells;
+  int vision_radius=2;
 }
 
-inline int get_x_offset(const int &octant, const int &j) {
+inline int get_x_offset(const int &octant, const int &j, const int &player_x, const int &player_y) {
   switch (octant)
   {
-  case 1: return j;
-  case 6: return j;
+  case 1: return player_x+j;
+  case 6: return player_x+j;
+  case 2: return player_x-j;
+  case 5: return player_x-j;
+
+  case 3: return player_y+j;
+  case 8: return player_y+j;
+  case 7: return player_y-j;
+  case 4: return player_y-j;
     
   }
 }
 
-inline int get_y_offset(const int &octant, const int &i) {
+inline int get_y_offset(const int &octant, const int &i, const int &player_x, const int &player_y) {
   switch (octant)
   {
-  case 1: return -i;
-  case 6: return i;
+  case 1: return player_y-i;
+  case 6: return player_y+i;
+  case 2: return player_y-i;
+  case 5: return player_y+i;
+
+  case 3: return player_x+i;
+  case 8: return player_x-i;
+  case 7: return player_x-i;
+  case 4: return player_x+i;
   
 
   }
@@ -71,6 +86,42 @@ inline pair<float, float> calculate_slope(const int &x, const int &y, const int 
     r_slope = ((float) player_x - ((float) x + 0.5)) / abs((float) player_y - ((float) y + 0.5));
     return make_pair(l_slope, r_slope);
     break;
+
+  case 2:
+    r_slope = abs((float) player_x - ((float) x - 0.5)) / ((float) player_y - ((float) y - 0.5));
+    l_slope = abs((float) player_x - ((float) x + 0.5)) / ((float) player_y - ((float) y + 0.5));
+    return make_pair(l_slope, r_slope);
+    break;
+  
+  case 5:
+    r_slope = abs((float) player_x - ((float) x - 0.5)) / abs((float) player_y - ((float) y + 0.5));
+    l_slope = abs((float) player_x - ((float) x + 0.5)) / abs((float) player_y - ((float) y - 0.5));
+    return make_pair(l_slope, r_slope);
+    break;
+
+  case 3:
+    l_slope = ((float) player_y - ((float) y - 0.5)) / -((float) player_x - ((float) x - 0.5));
+    r_slope = ((float) player_y - ((float) y + 0.5)) / -((float) player_x - ((float) x + 0.5));
+    return make_pair(l_slope, r_slope);
+    break;
+
+  case 8:
+    l_slope = ((float) player_y - ((float) y - 0.5)) / ((float) player_x - ((float) x + 0.5));
+    r_slope = ((float) player_y - ((float) y + 0.5)) / ((float) player_x - ((float) x - 0.5));
+    return make_pair(l_slope, r_slope);
+    break;
+
+  case 7:
+    l_slope = -((float) player_y - ((float) y + 0.5)) / ((float) player_x - ((float) x + 0.5));
+    r_slope = -((float) player_y - ((float) y - 0.5)) / ((float) player_x - ((float) x - 0.5));
+    return make_pair(l_slope, r_slope);
+    break;
+  
+  case 4:
+    l_slope = -((float) player_y - ((float) y + 0.5)) / -((float) player_x - ((float) x - 0.5));
+    r_slope = -((float) player_y - ((float) y - 0.5)) / -((float) player_x - ((float) x + 0.5));
+    return make_pair(l_slope, r_slope);
+    break;
   
   default:
     break;
@@ -83,18 +134,25 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
   if (start_slope < end_slope) {return;}
 
   float prev_r_slope = start_slope;
+  int search_x, search_y;
   //  go from left to right, then keep moving up
   for (int i=row; i<=radius; i++) {
     bool blocked = false; // indicates whether the previous cell was also blocked
     
-    int search_y = player_y + get_y_offset(octant, i);
-    // if y pos outside radius, break
-    // if (abs(search_y - player_y) > radius) {break;}
+    int search_y_tmp = get_y_offset(octant, i, player_x, player_y);
 
     for (int j=-i; j<=0; j++) {
-      int search_x = player_x + get_x_offset(octant, j);
-      // if x pos outise radius, continue
-      // if (abs(search_x - player_x) > radius) {continue;}
+      int search_x_tmp = get_x_offset(octant, j, player_x, player_y);
+
+      // swap if this is vertical octants
+      if ((octant==3) || (octant==8) || (octant==7) || (octant==4)) {
+        search_y = search_x_tmp; search_x = search_y_tmp;
+      } else {
+        search_y = search_y_tmp; search_x = search_x_tmp;
+      }
+
+
+      if ((search_x<0) || (search_x>map::map_width) || (search_y<0) || (search_y>map::map_height)) {continue;}
 
       // calculate slope
       pair<float, float> current_slopes = calculate_slope(search_x, search_y, player_x, player_y, octant);
@@ -136,7 +194,7 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
 
 
 void mark_visible_cells(int player_x, int player_y) {
-  int radius = 10;
-  recur_shadowcast(1.0, 0.0, radius, 0, player_x, player_y, 1);
-  recur_shadowcast(1.0, 0.0, radius, 0, player_x, player_y, 6);
+  for (int i=1; i<=8; i++) {
+    recur_shadowcast(1.0, 0.0, map::vision_radius, 0, player_x, player_y, i);
+  }
 }

@@ -20,6 +20,7 @@ namespace map {
   extern std::vector<std::vector<char>> map_array;
   extern std::vector<std::pair<int, int>> visible_cells;
   extern std::vector<std::pair<int, int>> prev_visible_cells;
+  extern int vision_radius;
   extern int map_height;
   extern int map_width;
 
