@@ -2,6 +2,7 @@
     "files.associations": {
         "altera_avalon_timer.h": "c",
         "altera_up_avalon_accelerometer_spi.h": "c",
+<<<<<<< HEAD
         "altera_avalon_pio_regs.h": "c",
         "array": "cpp",
         "atomic": "cpp",
@@ -47,4 +48,9 @@
         "thread": "cpp",
         "typeinfo": "cpp"
     }
+=======
+        "altera_avalon_pio_regs.h": "c"
+    },
+    "python.pythonPath": "/usr/bin/python3"
+>>>>>>> 1b8bc01af2dd5a1dedd58f1ba17c1d3d19561bb9
 }
