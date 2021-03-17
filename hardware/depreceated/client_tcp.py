@@ -1,42 +1,25 @@
-
-# Import socket module  
-import socket    
-import numpy as np    
+import socket   
 import struct      
   
-# Create a socket object  
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)        
-  
-# Define the port on which you want to connect  
-port = 8080              
-  
-# connect to the server on local computer  
-sock.connect(('13.212.10.207', port))  
+# Create a socket object (on local host)
+sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+port = 8080
+sock.connect(('127.0.0.1', port))
 
-# Send data to server
-# data = "Hello Server!"
+# Manipulate the data to be sent back to server here.
+data_send = [3,2,1]
+data_bytes = bytearray()
+for data_packet in data_send:
+    data_packet = bytearray( data_packet.to_bytes(4, "big") )   # Network byte-order is big-endian, so we specify this.
+    data_bytes += data_packet
 
-#data = np.array([1, 2, 3], dtype='int32')
+print("Sent", data_bytes, "to server")
+sock.send(data_bytes)
 
-# my_bytes = bytearray()
-# my_bytes.append(value_x)
-# my_bytes.append(value_y)
-# my_bytes.append(enum)
-
-# data = my_bytes
-#sock.send(data) #encode turns strings into bytes?
-# sock.send(b'1234')
-data = bytearray(struct.unpack("4b", struct.pack("I", 100)))
-print("Sent", data, "to server")
-
-sock.send(data)
-# Receive data from server
-dataFromServer = sock.recv(1024)
+dataFromServer = sock.recv(1024)    # Receive data from server
 
 # Print to the console
 print(dataFromServer.decode())
 
-# receive data from the server  
-#print (s.recv(1024) ) 
 # close the connection  
-sock.close()   
+sock.close()

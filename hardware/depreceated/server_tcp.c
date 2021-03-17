@@ -1,23 +1,22 @@
-// Server side C/C++ program to demonstrate Socket programming 
+// Server side C/C++ program to demonstrate Socket programming
 #include <unistd.h> 
 #include <stdio.h> 
 #include <sys/socket.h> 
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <string.h> 
+#include <ctype.h>
+
 #define PORT 8080 
-int main(int argc, char const *argv[]) 
-{ 
+int main(int argc, char const *argv[]) {
+    /* Socket parameters */
     int server_fd, new_socket, valread; 
     struct sockaddr_in address; 
     int opt = 1; 
-    int addrlen = sizeof(address); 
-    char buffer[1024] = {0}; 
-    char *hello = "Hello from server"; 
-       
+    int addrlen = sizeof(address);
+    
     // Creating socket file descriptor 
-    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
-    { 
+    if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0) { 
         perror("socket failed"); 
         exit(EXIT_FAILURE); 
     } 
@@ -51,9 +50,21 @@ int main(int argc, char const *argv[])
         perror("accept"); 
         exit(EXIT_FAILURE); 
     } 
-    valread = read( new_socket , buffer, 1024); 
-    printf("%d\n",buffer ); 
-    send(new_socket , hello , strlen(hello) , 0 ); 
-    printf("Hello message sent\n"); 
+
+    /* IMPORTANT CODE HERE */
+
+    // Get an int back
+    #define RECV_LEN 3
+    int recv_data[RECV_LEN] = {0};
+    valread = read( new_socket , &recv_data, sizeof(recv_data) );
+    // Data is sent as bytes
+    for(unsigned i=0; i<RECV_LEN; i++){
+        recv_data[i] = ntohl(recv_data[i]);     // Remember to do translation back to host endinanness
+    }
+    printf("X: %d | Y: %d | Task_Complete: %d | Valread:%d\n", recv_data[0], recv_data[1], recv_data[2], valread);
+
+    char *ack_msg = "Recieved."; 
+    send(new_socket , ack_msg , strlen(ack_msg) , 0 );  // This will be substituted to be the STATE for the player
+    printf("Acknowledge message sent\n");
     return 0; 
 }
