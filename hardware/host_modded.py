@@ -21,7 +21,7 @@ def main():
         # convert into a bytes object
         print("Sent", in_fpga, "to FPGA.")
 
-        proc.stdin.write(in_fpga)
+        proc.stdin.write(in_fpga) # This doesn't work atm
 
         out = proc.stdout.readline()
         print(out)
