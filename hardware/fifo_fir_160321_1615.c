@@ -1,13 +1,6 @@
-/*
-Fixed version of the code interfaces with FIR filter in an expected way now.
-Beforehand there was a bug in sending data to the FIR filter through the FIFOs due
-to sign-extension.
-*/
-
 #include "altera_avalon_fifo_regs.h"
 #include "altera_avalon_fifo_util.h"
 #include "altera_avalon_fifo.h"	// For the FIFO (talking to hardware components)
-
 #include "system.h"
 #include "altera_up_avalon_accelerometer_spi.h"
 #include "altera_avalon_jtag_uart.h"
@@ -15,24 +8,24 @@ to sign-extension.
 #include "altera_avalon_timer.h"
 #include "altera_avalon_pio_regs.h"
 #include "sys/alt_irq.h"
-#include <stdlib.h>
 #include "sys/alt_stdio.h"
-#include "alt_types.h"
+
+#include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <fcntl.h>	// Enable nonblocking
 
 
 /* ####### VARIABLE DEFINITIONS ####### */
 #define DEBUG 1					// set to 0 for comms with host PC
+#define SEND_TO_PC 1
+
 #define TX_RATE 2				// in hertz, to host PC
 const alt_u32 sleep_time = 1000000/TX_RATE;
 const alt_u16 FIR_SHIFT = 19;	// number of bits to shift output FIR data
 const alt_32 acc_x_offset = 2;
 const alt_32 acc_y_offset = -10;
 const alt_32 acc_z_offset = -45;	// Offset for the accelerometer readings
-
-volatile alt_u32* uartDataRegPtr  = (alt_u32*)JTAG_UART_BASE;		// UART Data register
-volatile alt_u32* uartCntrlRegPtr = ((alt_u32*)JTAG_UART_BASE+1);	// UART Control register
 
 // Convenient way to get current state
 enum dev_state{
@@ -70,6 +63,7 @@ enum recieved_event {
 };
 
 // Code to send to the host
+// 0 is done, 1 is not done
 enum transmitted_event {
 	NONE,
 	NORMAL,
@@ -107,16 +101,15 @@ void accel_getdata(void* context, alt_u32 id);	// Read data from accelerometer o
 void fifo_x_getdata(void* context, alt_u32 id);	// Get data from FIFO when it's almost full
 void fifo_y_getdata(void* context, alt_u32 id);	// Get data from FIFO when it's almost full
 void fifo_z_getdata(void* context, alt_u32 id);	// Get data from FIFO when it's almost full
-void uart_getdata(void* context, alt_u32 id);	// Get data from UART when something is sent
 
 void getDirection(); 	// gets XY data and gives a array of values
-
 void timer_init();
 
 /* GAME STATES */
 int rng();
 int lobby();
 int button_task();
+int led_switch_task();
 int random_number_task();
 int increment_task();
 int z_axis_task();
@@ -127,18 +120,13 @@ int endgame();
 int main()
 {
 	// ## START INIT CODE ## //
-	#ifdef DEBUG
-	for(int i=0; i<16; i++){
-		IOWR(HEX0_BASE, 0, sev_seg(i));
-		usleep(10000);	// debug startup
-	}
-	#endif
 
 	// Ensure that all FIR reset is held LOW
 	IOWR(FIR_RST_BASE, 0, 0b000);
+//    fcntl(STDIN_FILENO, F_SETFL, O_NONBLOCK);
+	// To enable non-blocking (dangerous! Don't use this!)
 
-	// Activate interrupts on UART
-	IOWR(uartCntrlRegPtr, 0, 0x1);	// Enable JTAG IRQ
+	timer_init();	// start the timer
 
 	acc_dev = alt_up_accelerometer_spi_open_dev("/dev/accelerometer_spi");
 	if (setup_accel((alt_up_accelerometer_spi_dev*)acc_dev)!=0) { while(1); }
@@ -189,24 +177,20 @@ int main()
 		while(1);
 	}
 
-//	init_status = alt_irq_register(JTAG_UART_IRQ, NULL, uart_getdata);	// pass the acc handle
-//	if (init_status!=0){
-//		#ifdef DEBUG
-//		alt_printf("[FATAL] JTAG_UART IRQ initialize error, code %x\n", init_status);
-//		#endif
-//		while(1);
-//	}
+	reset_sev_seg();
 
 	// ## END INIT CODE ## //
 	/* Event loop never exits. */
 	while (1){
-		uart_getdata(NULL, 0);	// nonblocking function
+		char get_char[1] = { alt_getchar() };
+		alt_u8 nios_event = atoi( get_char );
+
         getDirection();
 
-        int complete = 0;
+        IOWR(HEX5_BASE, 0, sev_seg(nios_event));	// visually see what task is being done
 
 		/* Game Logic */
-        switch (host_to_nios_event){
+        switch (nios_event){
         case WAITING_ROOM: // Lobby state
             nios_to_host_event = lobby();
             break;
@@ -232,7 +216,7 @@ int main()
             nios_to_host_event = endgame();
             break;
         default:
-            alt_printf("Unexpected input. Exiting.\n")  ;        //wait for task from server again
+            alt_printf("Unexpected input %d. Exiting.\n", nios_event)  ;        //wait for task from server again
             return 1;
         }
 
@@ -243,13 +227,14 @@ int main()
             '\n'        // packet delimiter (helps with readline())
 		};
 
-		#ifndef DEBUG
+		#ifdef SEND_TO_PC
 		write(1, send_arr, 13);	// Write 3*4+1 bytes = 13 bytes to 1 (stdout)
 		#endif
 
-		usleep(sleep_time);	// Don't need to spam the the up/downlink
+		reset_sev_seg();
+//		usleep(sleep_time);	// Don't need to spam the the up/downlink
 
-		#ifdef DEBUG
+		#ifndef SEND_TO_PC
 		// See FIFO status on 7seg
 		alt_u8 x_fill = altera_avalon_fifo_read_level(INPUT_FIFO_X_IN_CSR_BASE);
 		alt_u8 y_fill = altera_avalon_fifo_read_level(INPUT_FIFO_Y_IN_CSR_BASE);
@@ -283,8 +268,6 @@ int main()
 }
 
 void accel_getdata(void* context, alt_u32 id){
-	IOWR(LED_BASE, 0, 0x200);
-
 	// contextify acc_dev pointer
 	alt_up_accelerometer_spi_dev* acc_dev_ptr = (alt_up_accelerometer_spi_dev *)context;
 
@@ -327,8 +310,6 @@ void accel_getdata(void* context, alt_u32 id){
 		}
 	}
 	alt_irq_enable_all(irq_context);	// Re enable interrupts afterwards
-
-	IOWR(LED_BASE, 0, 0x00);
 }
 
 /* Easy event access
@@ -367,19 +348,6 @@ void fifo_z_getdata(void* context, alt_u32 id){
 	fifo_data[2] = altera_avalon_fifo_read_fifo(INPUT_FIFO_Z_OUT_BASE, INPUT_FIFO_Z_IN_CSR_BASE);
 	altera_avalon_fifo_clear_event(INPUT_FIFO_Z_IN_CSR_BASE, ALTERA_AVALON_FIFO_EVENT_ALL); // Clear FIFO event
 
-	alt_irq_enable_all(irq_context);	// Re enable interrupts afterwards
-}
-
-// Interrupt handler for JTAG-UART events
-void uart_getdata(void* context, alt_u32 id){
-	alt_irq_context irq_context = alt_irq_disable_all();
-	IOWR(LED_BASE, 0, 0b1);
-
-	alt_u32 jtag_status = *uartDataRegPtr;
-	host_to_nios_event  = jtag_status & 0xFF;		// UART Data register
-
-//	Interrupt is not cleared after this!
-	IOWR(LED_BASE, 0, 0b0);
 	alt_irq_enable_all(irq_context);	// Re enable interrupts afterwards
 }
 
@@ -634,40 +602,71 @@ void getDirection(){
 	}
 	xy_dir[1] = dir;
 }
+int lobby(){
+	#ifdef DEBUG
+	alt_printf  ("Lobby\n") ;
+	#endif
+
+	while(1){
+		int button_datain =  ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);      //read button
+	    button_datain &= (0x01);                                        //top button gives 1
+
+	    if(button_datain) return 1;
+	}
+}
 
 int button_task(){
-    #ifdef DEBUG
-    alt_printf  ("Button_task\n") ;
-    #endif
-
-    // Generating a random value between 3-9
+    alt_printf  ("button_task\n") ;
+   // printf("button_task");
     int random_value = rng();
-    int value=3;
-    if(random_value > 900){value = 9; random_value=0;}
-    else if(random_value < 200){value = 3; random_value=0;}
-    while(random_value>=200){value++; random_value -=150;}
-    //alt_prinf("rand %x\n, value %x\n", random_value, value);
-    //for(int k=0; k<1000000;k++){;}
+
+    int value=5;
+    if(random_value > 1000){value = 20; random_value=0;}
+    else if(random_value < 200){random_value=0;}
+    while(random_value>=200){value++; random_value -=53;}
+
+    int v1=0, v2=0;
+    while(value >= 10){v1++; value -=10;}
+    while(value > 0){v2++;  value -=1;}
 
     int button_datain;
-    while(1){
-        button_datain = ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);      //read button
-        button_datain &= (0x01);                                        //top button gives 1
-        alt_printf("button data: %x\n", button_datain);
 
-        int seg_disp = sev_seg(value);
-        IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg_disp); //loop
+    while(1){
+        button_datain = ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);          //read button
+        button_datain &= (0b0000000001);                                 //top button gives 1
+        int seg1 = sev_seg(v1);
+        int seg2 = sev_seg(v2);
+        IOWR_ALTERA_AVALON_PIO_DATA(HEX1_BASE, seg1); //loop
+        IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg2);
 
         if(button_datain==1){
-        	value -= 1;
+        	if(v2==0){v2=9; v1--;}
+        	else{v2--;}
+
         	while(button_datain==1){
-                button_datain = ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);          //read button
-                button_datain &= (0x01);
-                alt_printf("button unpress %x\n",button_datain);
+        	button_datain = ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);          //read button
+            button_datain &= (0b0000000001);
         	}
         }
+        if(v1==0 && v2==0){return 1;}
+    }
+}
 
-        if(value <= 0) {return 1;}
+int led_switch_task(){
+	#ifdef DEBUG
+    alt_printf  ("led_switch_task\n") ;
+	#endif
+
+    int led_value = rng();
+    int switch_datain;
+
+    int led_to_switch = -(led_value+1);
+    IOWR_ALTERA_AVALON_PIO_DATA(LED_BASE, led_value);
+
+    while(1){
+    	switch_datain = ~IORD_ALTERA_AVALON_PIO_DATA(SWITCH_BASE);
+//    	alt_printf("switch data: %x, compare_to: %x\n", switch_datain, led_to_switch );
+    	if(switch_datain==led_to_switch) return 1;
     }
 }
 
@@ -694,7 +693,7 @@ int random_number_task(){
 
     int switch_datain;
 
-    if(d1 == 1) IOWR_ALTERA_AVALON_PIO_DATA(HEX3_BASE, seg1); 
+    if(d1 == 1) IOWR_ALTERA_AVALON_PIO_DATA(HEX3_BASE, seg1);
     IOWR_ALTERA_AVALON_PIO_DATA(HEX2_BASE, seg2);
     IOWR_ALTERA_AVALON_PIO_DATA(HEX1_BASE, seg3);
     IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg4);
@@ -706,65 +705,11 @@ int random_number_task(){
 }
 
 //TODO: check if random works in actual implementation, the delay is a bit scuffed, u can go over the value
-int increment_task(){  
+int increment_task(){
     #ifdef DEBUG
-    alt_printf  ("increment\n") ;
+    alt_printf ("increment is depreceated\n") ;
     #endif
 
-    int random_value = rng();
-    int v1=0, v2=0;
-
-    int curr1=0;
-    int curr2=0;
-    int d3=0,d4=0;
-
-    while(random_value>=100){d3++; random_value -=100;}
-    while(random_value>=10){d4++; random_value -=10;}
-
-    if(d3>9){d3=9;}
-
-    int desired_value = d3*10 + d4;
-
-    int seg3 = sev_seg(d3);
-    int seg4 = sev_seg(d4);
-
-    IOWR_ALTERA_AVALON_PIO_DATA(HEX3_BASE, seg3);
-    IOWR_ALTERA_AVALON_PIO_DATA(HEX2_BASE, seg4);
-
-    IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, 0b1000000);
-    IOWR_ALTERA_AVALON_PIO_DATA(HEX1_BASE, 0b1000000);
-
-    int button_datain;
-    while(1){
-    	button_datain = ~IORD_ALTERA_AVALON_PIO_DATA(BUTTON_BASE);          //read button
-    	button_datain &= (0b0000000011);		//top button gives 01, bottom button gives 10
-
-    	if(button_datain==0b0000000001){
-    		curr1 += 1;
-    		if(curr1==10){curr1=0;}
-    	}
-
-    	else if(button_datain==0b0000000010){
-    		curr2 +=1;
-    		if(curr2==10){curr2=0; curr1 +=1;}
-    	}
-
-    	else{ alt_printf("no/both buttons pressed\n");}
-
-    	int seg1 = sev_seg(curr1);
-    	int seg2 = sev_seg(curr2);
-
-    	IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg2);
-    	IOWR_ALTERA_AVALON_PIO_DATA(HEX1_BASE, seg1);
-
-    	for(int k=0; k<200000;k++){;}  //needed delay
-
-    	int current = curr1*10 + curr2;
-    	if(current==desired_value){return 1;}
-
-    	alt_printf("curr1 %x, curr2 %x, current %x, desired %x\n",curr1,curr2,current,desired_value);
-
-    }
     return 1;
 }
 
@@ -783,10 +728,10 @@ int z_axis_task(){
 
     	if(state == 1 && acc_data[4] < 30 ){state=0; shake_count--;}
     	if(state == -1 && acc_data[4] > 30 ){state=1; shake_count--;}
-    	if(state == 0 ){state=-1;}
+    	if(state == 0 ) { state=-1;}
 
     	//alt_printf("shake_count: %x\n", shake_count);
-    	if(shake_count==0){return 1;}
+    	if(shake_count==0) { return 1;}
     }
    return 1;
 }
@@ -801,7 +746,7 @@ int endgame(){ //TODO:idk what we want here
 
 //MISC
 
-int rng(){ 
+int rng(){
 	IOWR(TIMER_BASE,4,1);
 	int value = IORD_ALTERA_AVALON_TIMER_SNAPL(TIMER_BASE);
 //	for(int i=0; i<10; i++){
@@ -809,7 +754,7 @@ int rng(){
 	//	int rand = IORD_ALTERA_AVALON_TIMER_SNAPL(TIMER_BASE);
 	//	alt_printf("random %x\n", rand);
 	//}
-	alt_printf("iord timer: %x\n", value);
+//	alt_printf("iord timer: %x\n", value);
 
 	return value;
 }
@@ -845,7 +790,7 @@ void timer_init() {
     IOWR_ALTERA_AVALON_TIMER_STATUS(TIMER_BASE, 0);
     // Clears the TO bit in status register, just in case
 
-    IOWR_ALTERA_AVALON_TIMER_PERIODL(TIMER_BASE, 0x02FF);
+    IOWR_ALTERA_AVALON_TIMER_PERIODL(TIMER_BASE, 0x03FF);
     IOWR_ALTERA_AVALON_TIMER_PERIODH(TIMER_BASE, 0x0000);
     // Timeout period: 0x0000'09000=2304d clock cycles
     // Given that the clock speed is 50MHz then means that the LED's are written to at around 21.7kHz
@@ -855,4 +800,6 @@ void timer_init() {
 
     IOWR_ALTERA_AVALON_TIMER_CONTROL(TIMER_BASE, 0x0007); //111
     // Write 0x7=0b0111 to start the timer
+
+    return;
 }

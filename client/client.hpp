@@ -12,10 +12,10 @@
 #include <iostream>
 #include <vector>
 #include <unordered_map>
-#include "screen.h"
-#include "map.h"
-#include "player.h"
-#include "connection.h"
+#include "../include/screen.h"
+#include "../include/map.h"
+#include "../include/player.h"
+#include "../include/connection.h"
 #define PORT 8080 
 
 using namespace std;
@@ -36,8 +36,8 @@ struct client_server_pkt{
     char client_mac_address[14]; //to differentiate btwn different clients on the same network
     uint8_t packet_type;
     char ch;
-    string name;
-    player players;
+    int x_coord[2];
+    int y_coord[2];
     //TODO: add on what is needed
 
 };
@@ -60,7 +60,7 @@ int process_acknowledgement(char *buffer_recv, int buffer_size);
 
 char process_game_start(char* buffer_recv_game_start, int buffer_size);
 
-player process_game(char* buffer_recv_game, int buffer_size);
+void process_game(char* buffer_recv_game, int buffer_size, player *players);
 
 void close_game();
 
