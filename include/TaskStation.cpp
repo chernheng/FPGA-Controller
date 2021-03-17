@@ -40,7 +40,8 @@ TaskStation::TaskStation(int n) {
   }
 }
 
-void TaskStation::newTask(std::vector<int> x, std::vector<int> y){
+void TaskStation::newTask(std::vector<int> x, std::vector<int> y, std::vector<int> t){
   x_stn = x;
   y_stn = y;
+  task = t;
 }

@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   wrefresh(map_screen);
 
   getch();
-  TaskStation t1 = TaskStation();
+  TaskStation t1;
   vector<int> x = t1.x_stn;
   vector<int> y = t1.y_stn;
 

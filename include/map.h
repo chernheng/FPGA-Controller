@@ -56,5 +56,5 @@ class TaskStation {
   TaskStation();
   TaskStation(int n);
 
-  void newTask(std::vector<int> x, std::vector<int> y);
+  void newTask(std::vector<int> x, std::vector<int> y,std::vector<int> t);
 };
