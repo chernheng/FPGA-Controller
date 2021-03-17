@@ -19,6 +19,13 @@ bool connect_to_server(string ip, string player_name) {
   game::players[0].name = "";
   game::players[0].is_used = true;
 
+  /**
+   * Record down player game station coordinates
+   * 
+   * game::stations.emplace_back(2, 3);
+   * ...
+   */
+
   // return true if ok, else return false
   return true;
 }

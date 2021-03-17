@@ -1,6 +1,6 @@
-#include "../include/screen.h"
-#include "../include/player.h"
-#include "../include/connection.h"
+#include "../../include/screen.h"
+#include "../../include/player.h"
+#include "../../include/connection.h"
 
 using namespace std;
 
