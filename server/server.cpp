@@ -212,13 +212,16 @@ int acknowledgement_packet(client_server_pkt *buffer_send)
     return buffer_send_size;
 }
 char no_of_users = 0;
-int game_start_packet(client_server_pkt *buffer_send)
+int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
     send_packet.packet_type = GAME_START_PKT;
     send_packet.ch = no_of_users;
     no_of_users++;
+    send_packet.ts_x = ts.x_stn;
+    send_packet.ts_y = ts.y_stn;
+
 
     //to set-up packet_fields
 
@@ -257,7 +260,7 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id)
     }
     send_packet.x_coord[id] = players[id].x_coord;
     send_packet.y_coord[id] = players[id].y_coord;
-    if (usr=='p'){
+    if (usr=='q'){
 	    send_packet.packet_type = GAME_END_PKT;
     }
 
@@ -475,6 +478,11 @@ int main()
                 printf("Detected wrong packet response from client.\n");
             }
         }
+        readmap("maps/map1.txt");
+        TaskStation ts[2];
+        for (int i = 0; i<2;i++){
+            ts[i] = TaskStation(i);
+        }
         int sent_pkt_type;
         for (int i = 0; i < clients.socket_descriptor.size(); i++)
         {
@@ -484,7 +492,7 @@ int main()
             int buffer_send_game_start_size;
             // clients.buffer_send_game_start.push_back(&buffer_send_game_start);
             // clients.buffer_send_game_start_size.push_back(buffer_send_game_start_size);
-            buffer_send_game_start_size = game_start_packet(&buffer_send_game_start);
+            buffer_send_game_start_size = game_start_packet(&buffer_send_game_start, ts[i]);
             //send game start coord and display to client
             send(clients.socket_descriptor[i], (char *)&buffer_send_game_start, buffer_send_game_start_size, 0);
             printf("Game start coordinates and game display sent\n");
@@ -501,11 +509,7 @@ int main()
         socklen_t len = sizeof(cliaddr);
         vector<sockaddr_in> vec_cliaddr;
         vector<socklen_t> vec_cliaddr_len;
-        // TaskStation t1[3];
-        // for (int i = 0; i<3;i++){
-        //     t1[i] = TaskStation(i);
-        // }
-        readmap("maps/map1.txt");
+
         player players[2];
         for (int i = 0; i<2;i++){
             players[i] = player();
@@ -568,25 +572,28 @@ int main()
                 // }
             }
             while(1){
-            for (int i = 0; i < clients.socket_descriptor.size(); i++)
-            {
-                //sends game display during game
-                client_server_pkt buffer_send_game;
-                int buffer_send_game_size;
-                //clients.buffer_send_game.push_back(&buffer_send_game);
-                //clients.buffer_send_game_size.push_back(buffer_send_game_size);
-                buffer_send_game_size = game_process_packet(&buffer_send_game, players, i);
-                //send game in process corrd and display to client
-                //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
-                if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
-                    perror("sending udp bytes failed"); 
-                    exit(EXIT_FAILURE); 
-                    //printf("Error in udp bytes sent\n");
+                for (int i = 0; i < clients.socket_descriptor.size(); i++)
+                {
+                    //sends game display during game
+                    client_server_pkt buffer_send_game;
+                    int buffer_send_game_size;
+                    //clients.buffer_send_game.push_back(&buffer_send_game);
+                    //clients.buffer_send_game_size.push_back(buffer_send_game_size);
+                    buffer_send_game_size = game_process_packet(&buffer_send_game, players, i);
+                    //send game in process corrd and display to client
+                    //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
+                    if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
+                        perror("sending udp bytes failed"); 
+                        exit(EXIT_FAILURE); 
+                        //printf("Error in udp bytes sent\n");
+                    }
+                    
+                    sent_pkt_type = process_packet((char *)&buffer_send_game);
+                    printf("loop number: %d\n", i);
                 }
-                
-                sent_pkt_type = process_packet((char *)&buffer_send_game);
-                printf("loop number: %d\n", i);
-            }
+                // for (int i = 0; i < clients.socket_descriptor.size(); i++)
+                // {
+                // }
             }
         }
 

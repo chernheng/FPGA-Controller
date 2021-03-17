@@ -58,6 +58,9 @@ struct client_server_pkt{
     char client_mac_address[14];
     uint8_t packet_type;
     char ch;
+    vector<int> ts_x;
+    vector<int> ts_y;
+    vector<int> task;
     int x_coord[2];
     int y_coord[2];
     //TODO: add on what is needed
@@ -72,7 +75,7 @@ int AcceptClient(int server_socket);
 
 int acknowledgement_packet(client_server_pkt* buffer_send);
 
-int game_start_packet(client_server_pkt* buffer_send);
+int game_start_packet(client_server_pkt* buffer_send, TaskStation ts);
 
 int game_process_packet(client_server_pkt* buffer_send, player *players,int id);
 
