@@ -17,9 +17,9 @@ void start_ncurses() {
   curs_set(0); // hide cursor
   int maxx, maxy;
   getmaxyx(stdscr, maxy, maxx);
-  if ((maxx < map::map_width) || (maxy < map::map_height+map::info_screen_height)) {
+  if ((maxx < mp::map_width) || (maxy < mp::map_height+mp::info_screen_height)) {
     std::string msg = "Your window is too small! (" + std::to_string(maxx) + " x " + std::to_string(maxy) + "). Needs to be at least (" + \
-      std::to_string(map::map_width) + " x " + std::to_string(map::map_height) + "). Press any key to exit";
+      std::to_string(mp::map_width) + " x " + std::to_string(mp::map_height) + "). Press any key to exit";
     printw(msg.c_str());
     getch();
     endwin();
@@ -36,12 +36,12 @@ void start_ncurses() {
 }
 
 void create_map_screen(int maxx, int maxy) {
-  map_screen = newwin(map::map_height, map::map_width, 0, (maxx-map::map_width)/2);
+  map_screen = newwin(mp::map_height, mp::map_width, 0, (maxx-mp::map_width)/2);
   // box(map_screen, 0, 0);
 }
 
 void create_info_screen(int maxx, int maxy) {
-  info_screen = newwin(map::info_screen_height, map::info_screen_width, map::map_height, (maxx-map::info_screen_width)/2);
+  info_screen = newwin(mp::info_screen_height, mp::info_screen_width, mp::map_height, (maxx-mp::info_screen_width)/2);
   // box(info_screen, 0, 0);
 }
 
@@ -52,7 +52,7 @@ void print_hidden_char(WINDOW * screen, int x, int y, char c='?') {
   }
 
   // print the borders
-  if ((x==map::map_width-1) || (x==0) || (y==map::map_height-1) || (y==0)) {
+  if ((x==mp::map_width-1) || (x==0) || (y==mp::map_height-1) || (y==0)) {
     print_char_to_screen(screen, x, y, c);
   // print certain characters
   } else if((c=='L')) {
@@ -65,9 +65,9 @@ void print_hidden_char(WINDOW * screen, int x, int y, char c='?') {
 
 void print_map_to_screen(WINDOW * screen) {
 
-  for (int i=0; i<map::map_height; i++) {
+  for (int i=0; i<mp::map_height; i++) {
 
-    for (int j=0; j<map::map_width; j++) {
+    for (int j=0; j<mp::map_width; j++) {
       print_hidden_char(screen, j, i);
     }
 
@@ -153,6 +153,18 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
     wattroff(screen, COLOR_PAIR(FLOOR_CLR));
     break;
   
+  case '~': // Water
+    wattron(screen, COLOR_PAIR(WATER_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(WATER_CLR));
+    break;
+
+  case '@': // Teleport
+    wattron(screen, COLOR_PAIR(TELEPORT_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(TELEPORT_CLR));
+    break;
+  
   default:
     wattron(screen, COLOR_PAIR(EMPTY_CLR));
     mvwprintw(screen, y_pos, x_pos, ch.c_str());
@@ -175,14 +187,16 @@ void init_color_pairs() {
   init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
   init_pair(WINDOW_CLR, COLOR_BLACK, COLOR_CYAN);
   init_pair(LANTERN_CLR, COLOR_YELLOW, COLOR_RED);
+  init_pair(TELEPORT_CLR, COLOR_YELLOW, COLOR_MAGENTA);
+  init_pair(WATER_CLR, COLOR_BLUE, COLOR_WHITE);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
 
   // check if player has landed on a lantern
   if(get_map_char(p.x_coord, p.y_coord)=='L') {
-    map::map_array[p.y_coord][p.x_coord] = ' '; // remove lantern
-    map::vision_radius+=2;
+    mp::map_array[p.y_coord][p.x_coord] = ' '; // remove lantern
+    mp::vision_radius+=2;
   }
   // calculate FOV
   mark_visible_cells(p.x_coord, p.y_coord);
@@ -191,18 +205,18 @@ void update_player_pos(const player &p, WINDOW * screen) {
   print_hidden_char(screen, p.old_x_coord, p.old_y_coord);
 
   // remove previously visible positions
-  for (auto it : map::prev_visible_cells) {
+  for (auto it : mp::prev_visible_cells) {
     // print map character where player was
     print_hidden_char(screen, it.first, it.second);
   }
-  map::prev_visible_cells.clear();
-  map::prev_visible_cells = map::visible_cells;
+  mp::prev_visible_cells.clear();
+  mp::prev_visible_cells = mp::visible_cells;
 
   // print visible positions
-  for (auto it : map::visible_cells) {
+  for (auto it : mp::visible_cells) {
     print_char_to_screen(screen, it.first, it.second, get_map_char(it.first, it.second));
   }
-  map::visible_cells.clear();
+  mp::visible_cells.clear();
   
   // print new position of player
   print_char_to_screen(screen, p.x_coord, p.y_coord, 'X');
@@ -216,8 +230,8 @@ void update_other_player_pos() {
     player p = game::players[i];
     if (p.is_used) {
       // show on screen if within FOV
-      if (std::find(map::prev_visible_cells.begin(), map::prev_visible_cells.end(), std::make_pair(p.x_coord, p.y_coord)) \
-          != map::prev_visible_cells.end() ) {
+      if (std::find(mp::prev_visible_cells.begin(), mp::prev_visible_cells.end(), std::make_pair(p.x_coord, p.y_coord)) \
+          != mp::prev_visible_cells.end() ) {
             print_char_to_screen(map_screen, p.x_coord, p.y_coord, std::to_string(i)[0]);
           }
     }
@@ -226,7 +240,7 @@ void update_other_player_pos() {
 }
 
 void print_station(const TaskStation &t, WINDOW * screen) {
-  for(int i =0; i < map::stations;i++){
+  for(int i =0; i < mp::stations;i++){
     print_char_to_screen(screen, t.x_stn[i], t.y_stn[i], 'S');
   }
 }
@@ -259,9 +273,9 @@ void menu_screen() {
   my_form = new_form(field);
   int maxx = getmaxx(stdscr);
   
-  WINDOW* form_win = newwin(map::info_screen_height, map::info_screen_width, map::map_height, (maxx-map::info_screen_width)/2);
+  WINDOW* form_win = newwin(mp::info_screen_height, mp::info_screen_width, mp::map_height, (maxx-mp::info_screen_width)/2);
   set_form_win(my_form, form_win);
-  set_form_sub(my_form, derwin(form_win, map::info_screen_height, map::info_screen_width, map::map_height, (maxx-map::info_screen_width)/2  ));
+  set_form_sub(my_form, derwin(form_win, mp::info_screen_height, mp::info_screen_width, mp::map_height, (maxx-mp::info_screen_width)/2  ));
   box(form_win,0,0);
   post_form(my_form);
   wrefresh(form_win);

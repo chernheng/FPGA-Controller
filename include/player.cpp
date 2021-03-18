@@ -3,8 +3,8 @@
 
 
 player::player() {
-  x_coord = old_x_coord = map::player_start_x;
-  y_coord = old_y_coord = map::player_start_y;
+  x_coord = old_x_coord = mp::player_start_x;
+  y_coord = old_y_coord = mp::player_start_y;
 }
 
 void player::move(direction dir, int steps) {
@@ -61,6 +61,14 @@ void player::move(direction dir, int steps) {
       old_y_coord = y_coord;
       x_coord += x_coord_change;
       y_coord += y_coord_change;
+    
+    // if the player coordinates did change, and the player is over a teleport, then teleport
+    if ( (get_map_char(x_coord, y_coord) == '@') && ( (x_coord_change) || (y_coord_change) )  ) {
+      std::pair<int, int> new_coordinates = mp::teleport_bindings[std::make_pair(x_coord, y_coord)];
+      x_coord = new_coordinates.first;
+      y_coord = new_coordinates.second;
+
+    }
 
     
   

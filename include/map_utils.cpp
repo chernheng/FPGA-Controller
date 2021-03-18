@@ -2,6 +2,7 @@
 #include <fstream>
 #include <string>
 #include "map.h"
+#include <unordered_map>
 
 
 void readmap(std::string mapfile) {
@@ -15,10 +16,35 @@ void readmap(std::string mapfile) {
     mapin.get(); // throw away the " character generated
   }
 
-  for (int i=0; i<map::map_height; i++) {
+  // temporary map to hold teleport bindings
+  std::unordered_map<char, std::pair<int, int>> temp_teleport_bindings;
+
+  for (int i=0; i<mp::map_height; i++) {
     std::vector<char> row = {};
-    for (int j=0; j<map::map_width; j++) {
+    for (int j=0; j<mp::map_width; j++) {
       char c = mapin.get();
+      char d;
+      // if char is '@' consume next character which is the key for teleport bindings
+      // if char is 'S' add coordinates to compulsory stations
+      switch (c)
+      {
+      case '@':
+        d = mapin.get();
+        if (temp_teleport_bindings.count(d)) {
+          std::pair<int, int> that_teleport, this_teleport;
+          that_teleport = temp_teleport_bindings[d];
+          this_teleport = std::make_pair(j, i);
+          mp::teleport_bindings[that_teleport] = this_teleport;
+          mp::teleport_bindings[this_teleport] = that_teleport;
+        } else {
+          temp_teleport_bindings[d] = std::make_pair(j, i);
+        }
+        break;
+      case 'S':
+        mp::map_stations.emplace_back(j, i);
+        break;
+      
+      }
       row.push_back(c);
     }
     char k;
@@ -26,7 +52,7 @@ void readmap(std::string mapfile) {
       mapin.get();
     }
 
-    map::map_array.push_back(row);
+    mp::map_array.push_back(row);
   }
    
   mapin.close();
@@ -35,10 +61,10 @@ void readmap(std::string mapfile) {
 }
 
 char get_map_char(const int &x, const int &y) {
-  if ((x>map::map_width) || (y>map::map_height) || (x<0) || (y<0)) {
+  if ((x>mp::map_width) || (y>mp::map_height) || (x<0) || (y<0)) {
     return '\0';
   }
-  return map::map_array[y][x];
+  return mp::map_array[y][x];
 }
 
 bool can_occupy(const int &x, const int &y) {
