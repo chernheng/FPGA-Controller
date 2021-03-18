@@ -13,6 +13,10 @@ client : dir $(CLIENT_OBJ_FILES)
 	g++ $(LDARGS) $(CLIENT_OBJ_FILES) clientmain.cpp -lform -lncurses -o $@
 	chmod u+x $@
 
+network : dir $(CLIENT_OBJ_FILES)
+	g++ $(LDARGS) $(CLIENT_OBJ_FILES) client.cpp -lform -lncurses -o $@
+	chmod u+x $@
+
 build/%.o : ../include/%.cpp
 	g++ $(CCARGS) $< -o $@ 
 
@@ -23,3 +27,4 @@ clean:
 	rm -rf build
 	rm -f client
 	rm -f old_client
+	rm -f network

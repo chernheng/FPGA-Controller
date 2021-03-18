@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
 
 
   getch();
-  TaskStation t1;
+  TaskStation t1 = TaskStation();
   vector<int> x = t1.x_stn;
   vector<int> y = t1.y_stn;
 

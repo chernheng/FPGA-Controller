@@ -36,6 +36,9 @@ struct client_server_pkt{
     char client_mac_address[14]; //to differentiate btwn different clients on the same network
     uint8_t packet_type;
     char ch;
+    int ts_x[4];
+    int ts_y[4];
+    int task[4];
     int x_coord[2];
     int y_coord[2];
     //TODO: add on what is needed
@@ -58,7 +61,7 @@ int process_packet(char* buffer_recv);
 
 int process_acknowledgement(char *buffer_recv, int buffer_size);
 
-char process_game_start(char* buffer_recv_game_start, int buffer_size);
+char process_game_start(char* buffer_recv_game_start, int buffer_size, vector<int> &r,vector<int> &s,vector<int> &t);
 
 void process_game(char* buffer_recv_game, int buffer_size, player *players);
 
