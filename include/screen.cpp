@@ -81,8 +81,8 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
   {
   case '#':
     wattron(screen, COLOR_PAIR(WALL_CLR));
-    // mvwprintw(screen, y_pos, x_pos, ch.c_str());
-    mvwaddch(screen, y_pos, x_pos, ACS_CKBOARD);
+    mvwprintw(screen, y_pos, x_pos,std::string(1, ' ').c_str());
+    // mvwaddch(screen, y_pos, x_pos, ACS_CKBOARD);
     wattroff(screen, COLOR_PAIR(WALL_CLR));
     break;
   
@@ -90,6 +90,37 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
     wattron(screen, COLOR_PAIR(P1_CLR));
     mvwprintw(screen, y_pos, x_pos, ch.c_str());
     wattroff(screen, COLOR_PAIR(P1_CLR));
+    break;
+  
+  case '0':
+    wattron(screen, COLOR_PAIR(P0_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(P0_CLR));
+    break;
+  case '1':
+    wattron(screen, COLOR_PAIR(P1_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(P1_CLR));
+    break;
+  case '2':
+    wattron(screen, COLOR_PAIR(P2_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(P2_CLR));
+    break;
+  case '3':
+    wattron(screen, COLOR_PAIR(P3_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(P3_CLR));
+    break;
+  case '4':
+    wattron(screen, COLOR_PAIR(P4_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(P4_CLR));
+    break;
+  case '5':
+    wattron(screen, COLOR_PAIR(P5_CLR));
+    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    wattroff(screen, COLOR_PAIR(P5_CLR));
     break;
 
   case 'S':
@@ -131,7 +162,7 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
 }
 
 void init_color_pairs() {
-  init_pair(WALL_CLR, COLOR_YELLOW, COLOR_BLACK);
+  init_pair(WALL_CLR, COLOR_YELLOW, COLOR_YELLOW);
   init_pair(EMPTY_CLR, COLOR_YELLOW, COLOR_BLACK);
   init_pair(FLOOR_CLR, COLOR_YELLOW, COLOR_WHITE);
   init_pair(P0_CLR, COLOR_RED, COLOR_WHITE);
