@@ -1,33 +1,44 @@
 import pexpect
-import subprocess
+from pexpect import popen_spawn
+# import subprocess
 import os
 import sys
 
 # Working example of interacting interactively with a subprocess.
-# DOES NOT WORK ON WINDOWS.
-if os.name != "posix":
-    print("Please use a linux system.")
+if os.name == "posix":
+    print(">> On Linux.")
+    inputCmd = '/bin/bash -c "/mnt/c/intelFPGA_lite/20.1/quartus/bin64/nios2-terminal.exe --quiet --no-quit-on-ctrl-d"'
+elif os.name == "nt":
+    print(">> On Windows.")
+    inputCmd = "C:\\intelFPGA_lite\\20.1\\quartus\\bin64\\nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
+else:
+    print("Please use a linux or windows system.")
     exit(1)
 
-# Run nios2-command shell first.
-# subprocess.run("/mnt/c/intelFPGA_lite/20.1/nios2eds/nios2_command_shell.sh")
-# Actual 
-inputCmd = "/mnt/c/intelFPGA_lite/20.1/quartus/bin64/nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
-
-print(">> Starting subprocess (Ctrl-D to exit)")
-c = pexpect.spawnu(inputCmd)
-print(str(c))   # Debugging information
-# c.logfile = sys.stdout.buffer
+print(">> Starting subprocess. Enter 'q' on prompt to exit.")
+c = pexpect.popen_spawn.PopenSpawn(inputCmd, encoding='utf-8') # with Windows compatibility
+print(">> Ready!")
 
 while True:
-    c.expect('.')
     send_data = input(">> Send to subproc:")
-    c.send(send_data)
-    print(">> Sent", send_data, "to fgpa.")
-    c.expect(".")   #
-    print(">> Before:", c.before)
-    print(">> After:", c.after)
-    # c.expect("Give me Data:")   #expect can be a regex (good for us to filter data!!)
-    # c.expect("Data:")
-    # print("Before From host:", c.before) # The before property will contain all text up to the expected string pattern.
-    # print("After from host:" , c.after) # The after string will contain the text that was matched by the expected pattern.
+    if send_data == 'q':
+        break
+    elif len(send_data) != 1:
+        print("Send only one character.")
+        continue
+    x = c.send(send_data)
+    print(">> Sent", send_data, "with", x, "bytes to fgpa.")
+    index = c.expect(['{', pexpect.TIMEOUT], timeout=5)
+    if index!=0:
+        print("Timeout condition reached. Breaking")
+        break
+    c.expect(" ")
+    i = int(c.before, base=16)
+    c.expect(" ")
+    j = int(c.before, base=16)
+    c.expect("}")   # Now with line endings
+    k = int(c.before, base=16)
+    print(">> Obtained:", "i:", i, "j:", j, "k:", k)
+
+c.kill(2)
+print("Sent SIGINT to child. Exiting")
