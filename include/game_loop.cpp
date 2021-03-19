@@ -8,7 +8,6 @@
 namespace game {
   int player_index=0;
   player players[6];
-  std::string player_names[6];
   int current_task=0;
   bool doing_task=false;
   std::vector<std::pair<int, int>> stations;
@@ -26,7 +25,7 @@ void game_loop() {
     if (game::doing_task) {
       if (game::current_task==1) {
         // if just finished a task, remove station from map
-        map::map_array[game::players[game::player_index].old_y_coord][game::players[game::player_index].old_x_coord]=' ';
+        mp::map_array[game::players[game::player_index].old_y_coord][game::players[game::player_index].old_x_coord]=' ';
         game::doing_task = false;
       }
     }
@@ -45,5 +44,11 @@ void game_loop() {
 
     
     wrefresh(map_screen);
+  }
+}
+
+void copy_stations_to_map() {
+  for (auto it : game::stations) {
+    mp::map_array[it.second][it.first] = 'S';
   }
 }

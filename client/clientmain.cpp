@@ -20,6 +20,8 @@ int main(int argc, char **argv) {
   // info panel
   // TODO
 
+  copy_stations_to_map();
+
   // game loop
   game_loop();
 

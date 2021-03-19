@@ -32,7 +32,7 @@ Recursive Shadowcasting Algorithm: http://www.roguebasin.com/index.php?title=FOV
 
 using namespace std;
 
-namespace map {
+namespace mp {
   vector<pair<int, int>> visible_cells;
   vector<pair<int, int>> prev_visible_cells;
   int vision_radius=2;
@@ -152,7 +152,7 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
       }
 
       // skip if beyond map borders
-      if ((search_x<0) || (search_x>=map::map_width) || (search_y<0) || (search_y>=map::map_height)) {continue;}
+      if ((search_x<0) || (search_x>=mp::map_width) || (search_y<0) || (search_y>=mp::map_height)) {continue;}
 
       // calculate slope
       pair<float, float> current_slopes = calculate_slope(search_x, search_y, player_x, player_y, octant);
@@ -163,7 +163,7 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
 
       // make this square visible if it is within radius (x-a)^2 + (y-b)^2 = r^2
       if ((search_x-player_x)*(search_x-player_x)+(search_y-player_y)*(search_y-player_y) <= radius*radius) {
-        map::visible_cells.emplace_back(search_x, search_y);
+        mp::visible_cells.emplace_back(search_x, search_y);
       }
       
 
@@ -198,6 +198,6 @@ void recur_shadowcast(float start_slope, float end_slope, int radius, int row, i
 
 void mark_visible_cells(int player_x, int player_y) {
   for (int i=1; i<=8; i++) {
-    recur_shadowcast(1.0, 0.0, map::vision_radius, 0, player_x, player_y, i);
+    recur_shadowcast(1.0, 0.0, mp::vision_radius, 0, player_x, player_y, i);
   }
 }

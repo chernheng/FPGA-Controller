@@ -212,6 +212,7 @@ int acknowledgement_packet(client_server_pkt *buffer_send)
     return buffer_send_size;
 }
 char no_of_users = 0;
+
 int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
 {
     int buffer_send_size = 0;
@@ -219,8 +220,11 @@ int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
     send_packet.packet_type = GAME_START_PKT;
     send_packet.ch = no_of_users;
     no_of_users++;
-    send_packet.ts_x = ts.x_stn;
-    send_packet.ts_y = ts.y_stn;
+    for (int i = 0; i< 4;i++){
+        send_packet.ts_x[i] = ts.x_stn[i];
+        send_packet.ts_y[i] = ts.y_stn[i];
+        send_packet.task[i] = ts.task[i];
+    }
 
 
     //to set-up packet_fields
@@ -574,6 +578,8 @@ int main()
             while(1){
                 for (int i = 0; i < clients.socket_descriptor.size(); i++)
                 {
+                    vector<int> x = ts[i].x_stn;
+                    vector<int> y = ts[i].y_stn;
                     //sends game display during game
                     client_server_pkt buffer_send_game;
                     int buffer_send_game_size;
@@ -590,6 +596,13 @@ int main()
                     
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
+                    vector<int>::iterator it_x = find(x.begin(),x.end(),players[i].x_coord);
+                    vector<int>::iterator it_y = find(y.begin(),y.end(),players[i].y_coord);
+                    if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
+                        while(getch() !='p'){
+                            //execute task
+                            }
+                    }
                 }
                 // for (int i = 0; i < clients.socket_descriptor.size(); i++)
                 // {

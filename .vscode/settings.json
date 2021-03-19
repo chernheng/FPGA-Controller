@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "altera_avalon_timer.h": "c",
-        "altera_up_avalon_accelerometer_spi.h": "c",
-        "altera_avalon_pio_regs.h": "c"
-    },
-    "python.pythonPath": "/usr/bin/python3"
-}

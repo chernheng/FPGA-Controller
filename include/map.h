@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <ctime>
+#include <map>
 
 
 
@@ -16,7 +17,7 @@
 
 
 // global vector to store the map
-namespace map {
+namespace mp {
   extern std::vector<std::vector<char>> map_array;
   extern std::vector<std::pair<int, int>> visible_cells;
   extern std::vector<std::pair<int, int>> prev_visible_cells;
@@ -30,11 +31,15 @@ namespace map {
   extern int player_start_x;
   extern int player_start_y;
   extern int stations;
+  extern std::vector<std::pair<int, int>> map_stations;
+
+  extern std::map<std::pair<int, int>, std::pair<int, int>> teleport_bindings;
 
 }
 enum direction {UP_DIR, DN_DIR, LF_DIR, RT_DIR};
 enum {WALL_CLR=1, EMPTY_CLR, STNS_CLR, VISIBLE_CLR, FLOOR_CLR, WINDOW_CLR, \
-      LANTERN_CLR, P0_CLR, P1_CLR, P2_CLR, P3_CLR, P4_CLR, P5_CLR};
+      LANTERN_CLR, P0_CLR, P1_CLR, P2_CLR, P3_CLR, P4_CLR, P5_CLR,         \
+      TELEPORT_CLR, WATER_CLR, };
 
 
 
@@ -53,8 +58,7 @@ class TaskStation {
   std::vector<int> task;
   std::vector<int> x_stn;
   std::vector<int> y_stn;
-  TaskStation();
-  TaskStation(int n);
+  TaskStation(int n=0);
 
-  void newTask(std::vector<int> x, std::vector<int> y);
+  void newTask(std::vector<int> x, std::vector<int> y,std::vector<int> t);
 };

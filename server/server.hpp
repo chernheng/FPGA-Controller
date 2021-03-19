@@ -58,9 +58,9 @@ struct client_server_pkt{
     char client_mac_address[14];
     uint8_t packet_type;
     char ch;
-    vector<int> ts_x;
-    vector<int> ts_y;
-    vector<int> task;
+    int ts_x[4];
+    int ts_y[4];
+    int task[4];
     int x_coord[2];
     int y_coord[2];
     //TODO: add on what is needed
