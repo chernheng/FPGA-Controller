@@ -228,7 +228,8 @@ int main()
 		};
 
 		#ifdef SEND_TO_PC
-		write(1, send_arr, 13);	// Write 3*4+1 bytes = 13 bytes to 1 (stdout)
+		alt_printf("{%x %x %x}", send_arr[0], send_arr[1], send_arr[2]);
+//		write(1, send_arr, 13);	// Write 3*4+1 bytes = 13 bytes to 1 (stdout)
 		#endif
 
 		reset_sev_seg();
