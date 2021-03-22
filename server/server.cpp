@@ -12,6 +12,9 @@ struct sockaddr_in serv_address;
 int addrlen = sizeof(address);
 clients_info clients;
 vector<string> player_names;
+vector<int> FPGA_index; //how many FPGA and their index on the socket descriptor
+std::map<int,std::string> FPGA_mac; // maps FPGA to mac address
+std::map<std::string,int> mac_client;// maps mac address to client index
 
 //empty function so makefile doesnt complain
 int create_connection_socket(string server_ip)
@@ -322,7 +325,7 @@ int process_packet(char *buffer_recv)
     return pkt_type;
 }
 
-int process_connection_request(char *buffer_conn_req)
+int process_connection_request(char *buffer_conn_req, int id)
 {
     //to check a global map that stores current clients? - if size>=2, then will send ack, else will wait for another player to connect
     //if after timeout fn and no other player connects - error msg - dont ack player
@@ -334,6 +337,20 @@ int process_connection_request(char *buffer_conn_req)
         name[i] = pkt_received->name[i];
     }
     printf("%s has joined!\n", &(pkt_received->name[0]));
+
+    char mac[18];
+    sprintf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", 
+            (unsigned char)pkt_received->client_mac_address[0],
+            (unsigned char)pkt_received->client_mac_address[1],
+            (unsigned char)pkt_received->client_mac_address[2],
+            (unsigned char)pkt_received->client_mac_address[3],
+            (unsigned char)pkt_received->client_mac_address[4],
+            (unsigned char)pkt_received->client_mac_address[5]);
+
+    string mac_addr(mac);
+    mac_client.insert(pair<std::string,int>(mac_addr,id));
+    FPGA_mac.insert(pair<int,std::string>(id,mac_addr));
+    FPGA_index.push_back(id);
     
     if (clients.socket_descriptor.size() < 2)
     {
@@ -424,7 +441,7 @@ int main()
         }
 
         //when there is not enough players - wait for another client's connection
-        if (process_connection_request(clients.buffer_conn_req[0]) != 1)
+        if (process_connection_request(clients.buffer_conn_req[0], 0) != 1)
         {
             //int timeout=10;
             printf("Attempting to detect second client\n");
@@ -443,7 +460,7 @@ int main()
             pkt_type = process_packet(clients.buffer_conn_req[i]);
             if (pkt_type == CONNECTION_REQ_PKT)
             {
-                process_connection_request(clients.buffer_conn_req[i]);
+               process_connection_request(clients.buffer_conn_req[i], i);
             }
             else
             {
@@ -591,7 +608,7 @@ int main()
                 // }
             }
             while(1){
-                for (int i = 0; i < clients.socket_descriptor.size(); i++)
+                for (int i = 0; i < FPGA_index.size(); i++)
                 {
                     vector<int> x = ts[i].x_stn;
                     vector<int> y = ts[i].y_stn;
@@ -609,7 +626,12 @@ int main()
                     buffer_send_game_size = game_process_packet(&buffer_send_game, players, i,move);
                     //send game in process corrd and display to client
                     //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
-                    if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
+                    std::map<int,std::string>::iterator FPGA_it;
+                    std::map<std::string,int>::iterator client_it;
+                    FPGA_it = FPGA_mac.find(FPGA_index[i]);
+                    client_it = mac_client.find(FPGA_it->second);
+                    printf("client_index, %d\n",client_it->second);
+                    if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[client_it->second], vec_cliaddr_len[client_it->second])<0){
                         perror("sending udp bytes failed"); 
                         exit(EXIT_FAILURE); 
                         //printf("Error in udp bytes sent\n");

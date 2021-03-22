@@ -86,7 +86,7 @@ int reject_packet(client_server_pkt* buffer_send);
 
 int process_packet(char* buffer_recv);
 
-int process_connection_request(char* buffer_conn_req);
+int process_connection_request(char* buffer_conn_req, int id);
 
 int process_ready(char* buffer_recv, int buffer_size);
 
