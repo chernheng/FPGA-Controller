@@ -184,12 +184,14 @@ void init_color_pairs() {
   init_pair(P3_CLR, COLOR_CYAN, COLOR_WHITE);
   init_pair(P4_CLR, COLOR_BLUE, COLOR_WHITE);
   init_pair(P5_CLR, COLOR_YELLOW, COLOR_WHITE);
-  init_pair(STNS_CLR, COLOR_GREEN, COLOR_BLACK);
+  init_pair(STNS_CLR, COLOR_GREEN, COLOR_WHITE);
   init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
   init_pair(WINDOW_CLR, COLOR_BLACK, COLOR_CYAN);
   init_pair(LANTERN_CLR, COLOR_YELLOW, COLOR_RED);
   init_pair(TELEPORT_CLR, COLOR_YELLOW, COLOR_MAGENTA);
   init_pair(WATER_CLR, COLOR_BLUE, COLOR_WHITE);
+  init_pair(INFO_TEXT_CLR, COLOR_BLACK, COLOR_WHITE);
+  init_pair(INFO_RED_CLR, COLOR_RED, COLOR_WHITE);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
@@ -198,6 +200,7 @@ void update_player_pos(const player &p, WINDOW * screen) {
   if(get_map_char(p.x_coord, p.y_coord)=='L') {
     mp::map_array[p.y_coord][p.x_coord] = ' '; // remove lantern
     mp::vision_radius+=2;
+    info_panel_update_FOV_radius();
   }
   // calculate FOV
   mark_visible_cells(p.x_coord, p.y_coord);
@@ -385,19 +388,69 @@ void print_char_to_screen_alt(WINDOW * screen, int x_pos, int y_pos, char c) {
   }
 }
 
-//
-//
+#define TASK_2_TEXT "Flip the switches into the correct position!"
+#define TASK_3_TEXT "Press the buttons!"
+#define TASK_4_TEXT "Use the switches to convert the number shown into binary!"
+#define TASK_5_TEXT "Press the button when the main LED lights up!"
+#define TASK_6_TEXT "Shake the device up and down!"
+
+
+//?  0            13     20           33
+//   Tasks Left : N      FOV Radius : N
+//   Complete Task: 
 //
 //?  0                   20                  40                  60                  80                  100                 120
 //   X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name
 //
+
+void info_panel_update_no_tasks() {
+  int hud_y_coord = 0;
+  int no_of_tasks_left = game::players[game::player_index].tasks_left;
+  wattron(info_screen, COLOR_PAIR(INFO_RED_CLR));
+  string txt = to_string(no_of_tasks_left) + " ";
+  mvwprintw(info_screen, hud_y_coord, 13, txt.c_str());
+  wattroff(info_screen, COLOR_PAIR(INFO_RED_CLR));
+}
+
+void info_panel_update_FOV_radius() {
+  int hud_y_coord = 0;
+
+  wattron(info_screen, COLOR_PAIR(INFO_RED_CLR));
+  string txt = to_string(mp::vision_radius) + " ";
+  mvwprintw(info_screen, hud_y_coord, 33, txt.c_str());
+  wattroff(info_screen, COLOR_PAIR(INFO_RED_CLR));
+}
+
 void init_info_panel() {
 
-  // Print player characters
-  for (int i=0; i<6; i++) {
-    if (game::players[i].is_used) {
-      print_char_to_screen(info_screen, i*20, mp::info_screen_height-1, to_string(i)[0]);
+  // Paint whole screen white
+  for (int i=0; i<mp::info_screen_height; i++) {
+    for (int j=0; j<mp::info_screen_width; j++) {
+      print_char_to_screen(info_screen, j, i, ' ');
     }
   }
+
+  // Print player characters
+  int player_name_y_coord = mp::info_screen_height-1;
+  for (int i=0; i<6; i++) {
+    if (game::players[i].is_used) {
+      print_char_to_screen(info_screen, i*20, player_name_y_coord, to_string(i)[0]);
+      string txt = ": " + game::players[i].name;
+      wattron(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+      mvwprintw(info_screen, player_name_y_coord, (i*20)+2, txt.c_str());
+      wattroff(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+    }
+  }
+
+  // Print text for "Tasks Left", "FOV"
+  int hud_y_coord = 0;
+  wattron(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+  mvwprintw(info_screen, hud_y_coord, 0, string("Tasks Left :").c_str());
+  mvwprintw(info_screen, hud_y_coord, 20, string("FOV Radius :").c_str());
+  wattroff(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+
+  info_panel_update_FOV_radius();
+  info_panel_update_no_tasks();
+  wrefresh(info_screen);
 
 }

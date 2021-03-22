@@ -21,7 +21,10 @@ void game_loop() {
       if (game::current_task==1) {
         // if just finished a task, remove station from map
         mp::map_array[game::players[game::player_index].old_y_coord][game::players[game::player_index].old_x_coord]=' ';
+        game::players[game::player_index].tasks_left--;
         game::doing_task = false;
+        // update info panel
+        info_panel_update_no_tasks();
       }
     }
 
@@ -46,4 +49,5 @@ void copy_stations_to_map() {
   for (auto it : game::stations) {
     mp::map_array[it.second][it.first] = 'S';
   }
+  game::players[game::player_index].tasks_left = game::stations.size();
 }

@@ -26,6 +26,7 @@ int main(int argc, char **argv) {
   print_map_to_screen(map_screen);
   wrefresh(map_screen);
 
+  init_info_panel();
   getch();
   TaskStation t1;
   vector<int> x = t1.x_stn;
@@ -60,6 +61,7 @@ int main(int argc, char **argv) {
 
     update_player_pos(p1, map_screen);
     wrefresh(map_screen);
+    wrefresh(info_screen);
   }
 
 
