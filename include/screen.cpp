@@ -255,6 +255,17 @@ bool try_connect_server(FIELD * field[], WINDOW * form_win) {
   wrefresh(form_win);
   std::string ip = std::string(field_buffer(field[0], 0));
   std::string name = std::string(field_buffer(field[1], 0));
+  for (int i=0; i<ip.size(); i++) {
+    // if not . or digit
+    if ( ((ip[i] < '0') || (ip[i] > '9')) && (ip[i] != '.') ) {
+      ip = ip.substr(0, i);
+      break;
+    }
+  }
+  // cerr << endl << endl;
+  // for (int i=0; i<ip.size(); i++) {
+  //   cerr <<(int) ip[i] << " ";
+  // }
   game::player_name = name;
   if (create_connection_socket(ip)!=0){
         //socket is not set-up properly - TODO: what to respond with?
@@ -280,9 +291,11 @@ void menu_screen() {
   /* Set field options */
   set_field_back(field[0], A_UNDERLINE); /* Print a line for the option */
   field_opts_off(field[0], O_AUTOSKIP); /* Don't go to next field when this */
+  // field_opts_off(field[0], O_STATIC);
   /* Field is filled up */
   set_field_back(field[1], A_UNDERLINE);
   field_opts_off(field[1], O_AUTOSKIP);
+  
   /* Create the form and post it */
   my_form = new_form(field);
   int maxx = getmaxx(stdscr);
