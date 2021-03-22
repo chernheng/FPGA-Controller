@@ -5,6 +5,7 @@
 #include "game_loop.h"
 #include "player.h"
 
+
 // global vars
 WINDOW * map_screen;
 WINDOW * info_screen; 
@@ -250,6 +251,15 @@ bool try_connect_server(FIELD * field[], WINDOW * form_win) {
   wrefresh(form_win);
   std::string ip = std::string(field_buffer(field[0], 0));
   std::string name = std::string(field_buffer(field[1], 0));
+  game::player_name = name;
+  if (create_connection_socket(ip)!=0){
+        //socket is not set-up properly - TODO: what to respond with?
+        return false;
+  }
+  if (create_udp_connection_socket(ip)!=0){
+    return false;
+        //some error in socket creation
+  }
   return connect_to_server(ip, name);
 }
 

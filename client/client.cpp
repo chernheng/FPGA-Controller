@@ -1,5 +1,6 @@
 #include "client.hpp"
 #define PORT 8080 
+// #define DEBUG
 
 using namespace std;
 
@@ -77,7 +78,9 @@ int create_udp_connection_socket(string server_ip){
     //              &len); 
     // puts(buffer); 
     // close(sockfd);
+    #ifdef DEBUG
     printf("Created udp socket\n"); 
+    #endif
     return 0; 
 }
 
@@ -133,6 +136,7 @@ int get_mac_address(char *mac_address){
         }
         
         //char mac[18];
+        #ifdef DEBUG
         printf("mac address: %02x:%02x:%02x:%02x:%02x:%02x\n", 
             (unsigned char)ifr.ifr_hwaddr.sa_data[0],
             (unsigned char)ifr.ifr_hwaddr.sa_data[1],
@@ -140,6 +144,7 @@ int get_mac_address(char *mac_address){
             (unsigned char)ifr.ifr_hwaddr.sa_data[3],
             (unsigned char)ifr.ifr_hwaddr.sa_data[4],
             (unsigned char)ifr.ifr_hwaddr.sa_data[5]);
+        #endif
         //printf("mac address: %s\n", mac);
 
         //printf("mac address: %s\n", mac);
@@ -157,8 +162,15 @@ int connection_request_packet(client_server_pkt* buffer_send, char *mac_address)
     for (int i=0; i<14; i++){
         send_packet.client_mac_address[i] = *(mac_address+i);
     }
+    for (int i =0;i<15;i++){
+        send_packet.name[i] = 0;
+    }
+    for (int i =0; i<game::player_name.size();i++){
+        send_packet.name[i] = game::player_name[i];
+    }
     //printf("mac address: %s\n", send_packet.client_mac_address);
     //char mac[18];
+    #ifdef DEBUG
     printf("mac address: %02x:%02x:%02x:%02x:%02x:%02x\n", 
             (unsigned char)send_packet.client_mac_address[0],
             (unsigned char)send_packet.client_mac_address[1],
@@ -166,6 +178,7 @@ int connection_request_packet(client_server_pkt* buffer_send, char *mac_address)
             (unsigned char)send_packet.client_mac_address[3],
             (unsigned char)send_packet.client_mac_address[4],
             (unsigned char)send_packet.client_mac_address[5]);
+    #endif
     //printf("mac address: %s\n", mac);
     // send_packet.client_mac_address = mac_address;
     send_packet.packet_type = CONNECTION_REQ_PKT;
@@ -185,6 +198,7 @@ int player_ready_packet(client_server_pkt* buffer_send, char *mac_address){
         send_packet.client_mac_address[i] = *(mac_address+i);
     }
     //char mac[18];
+    #ifdef DEBUG
     printf("mac address: %02x:%02x:%02x:%02x:%02x:%02x\n", 
             (unsigned char)send_packet.client_mac_address[0],
             (unsigned char)send_packet.client_mac_address[1],
@@ -192,11 +206,14 @@ int player_ready_packet(client_server_pkt* buffer_send, char *mac_address){
             (unsigned char)send_packet.client_mac_address[3],
             (unsigned char)send_packet.client_mac_address[4],
             (unsigned char)send_packet.client_mac_address[5]);
+    #endif
     //printf("mac address: %s\n", mac);
 
     send_packet.packet_type = PLAYER_READY_PKT;
     *buffer_send = send_packet;
+    #ifdef DEBUG
     printf("Checking packet number sent (in player_ready fn): %d\n", buffer_send->packet_type);
+    #endif
 
     buffer_send_size = sizeof(send_packet);
     return buffer_send_size;
@@ -211,6 +228,7 @@ int game_input_packet(client_server_pkt* buffer_send, char *mac_address){
         send_packet.client_mac_address[i] = *(mac_address+i);
     }
     //char mac[18];
+    #ifdef DEBUG
     printf("mac address: %02x:%02x:%02x:%02x:%02x:%02x\n", 
             (unsigned char)send_packet.client_mac_address[0],
             (unsigned char)send_packet.client_mac_address[1],
@@ -218,6 +236,7 @@ int game_input_packet(client_server_pkt* buffer_send, char *mac_address){
             (unsigned char)send_packet.client_mac_address[3],
             (unsigned char)send_packet.client_mac_address[4],
             (unsigned char)send_packet.client_mac_address[5]);
+    #endif
     //printf("mac address: %s\n", mac);
 
     *buffer_send = send_packet;
@@ -238,19 +257,19 @@ int process_acknowledgement(char *buffer_recv, int buffer_size){
     //
 }
 
-char process_game_start(char* buffer_recv_game_start, int buffer_size, vector<int> &r,vector<int> &s,vector<int> &t){
+char process_game_start(char* buffer_recv_game_start, int buffer_size){
     //to process display and player's coord.
     char ch;
     client_server_pkt* pkt_received = (client_server_pkt*)buffer_recv_game_start;
     ch = pkt_received->ch;
+    #ifdef DEBUG
     printf("User_id: %d\n",ch); 
+    #endif
     int *x = pkt_received->ts_x;
     int *y = pkt_received->ts_y;
     int *task = pkt_received->task;
     for (int i = 0; i<4;i++){
-        r[i] = x[i];
-        s[i] = y[i];
-        t[i] = task[i];
+        game::stations.emplace_back(x[i],y[i]);
     }
     // t.newTask(x,y);
     return ch;
@@ -273,33 +292,36 @@ void close_game(){
 }
 
 int main(int argc, char* argv[]){
-    if (argc>2){
-        printf("Too many arguments. Please provide only the server's IP address.\n ");
-    }
-    if (argc<2){
-        printf("Please input the server's IP address.\n");
-    }
-    string server_ip = argv[1];
-    //set-up of socket for connecting to server
-    if (create_connection_socket(server_ip)!=0){
-        //socket is not set-up properly - TODO: what to respond with?
-    }
+    // if (argc>2){
+    //     printf("Too many arguments. Please provide only the server's IP address.\n ");
+    // }
+    // if (argc<2){
+    //     printf("Please input the server's IP address.\n");
+    // }
+    // string server_ip = argv[1];
+    // //set-up of socket for connecting to server
+    // if (create_connection_socket(server_ip)!=0){
+    //     //socket is not set-up properly - TODO: what to respond with?
+    // }
+    start_ncurses();
+    menu_screen();
     char mac_address[14];
     if (get_mac_address(mac_address)!=0){
         //error handling
     }
-    
     //set-up connection request packet fields
     client_server_pkt buffer_send;
     int buffer_send_size = connection_request_packet(&buffer_send, mac_address);
-
-    
     //send connection request to server
     //TODO: check that sock != 0 - ensuring that socket has been set-up properly
     send(sock , (char*)&buffer_send , buffer_send_size , 0 ); 
+    #ifdef DEBUG
     printf("Connection request sent\n");
+    #endif
     client_server_pkt *test_pkt_1 = (client_server_pkt*)&buffer_send;
+    #ifdef DEBUG
     printf("Checking packet number sent: %d\n", test_pkt_1->packet_type);
+    #endif
 
     //receive acknowledgement packet from server - writes to buffer_recv
     //TODO: add timeout fn here - may be trying to connect to server when it is down
@@ -329,22 +351,20 @@ int main(int argc, char* argv[]){
     //send connection ready to server
     send(sock , (char *)&buffer_send_ready , buffer_send_ready_size , 0 ); 
     client_server_pkt *test_pkt = (client_server_pkt*)&buffer_send_ready;
+    #ifdef DEBUG
     printf("Checking packet number sent: %d\n", test_pkt->packet_type);
     printf("Player ready sent\n");
+    #endif
 
     //receive game start coord. and game display from server - writes to buffer_recv
     //TODO: add timeout fn here - may be trying to connect to server when it is down
     readmap("maps/map1.txt");
-    TaskStation ts = TaskStation();
-    vector<int> r = {0,0,0,0};
-    vector<int> s = {0,0,0,0};
-    vector<int> t = {0,0,0,0};
     char buffer_recv_game_start[MAX_COUNT_BYTES] = {0}; 
     int valread_game_start = read( sock , buffer_recv_game_start, MAX_COUNT_BYTES); 
     int user_id;
     pkt_type = process_packet(buffer_recv_game_start);
     if (pkt_type==GAME_START_PKT){
-        user_id = process_game_start(buffer_recv_game_start, MAX_COUNT_BYTES, r,s,t);
+        user_id = process_game_start(buffer_recv_game_start, MAX_COUNT_BYTES);
     }else{
         printf("Detected wrong packet response from server.\n");
     }
@@ -363,22 +383,19 @@ int main(int argc, char* argv[]){
     //TODO: while game is ongoing, keep receiving packets - while loop; while the msg received is not the end game packet
     // char* end_game_packet;
     // end_game_packet_struct(end_game_packet);
-    if (create_udp_connection_socket(server_ip)!=0){
-        //some error in socket creation
+    // if (create_udp_connection_socket(server_ip)!=0){
+    //     //some error in socket creation
 
-    }
-    start_ncurses();
-    menu_screen();
+    // }
+    // start_ncurses();
+    // menu_screen();
     // read map
     readmap("maps/map1.txt");
     print_map_to_screen(map_screen);
     wrefresh(map_screen);
-    ts.newTask(r,s,t);
+    copy_stations_to_map();
+    // ts.newTask(r,s,t);
     // TaskStation t1;
-    vector<int> task = ts.task;
-
-    player players[2];
-
     while(pkt_type!=GAME_END_PKT){
         //buffer_recv_game = 0; 
         //send game input to server
@@ -403,12 +420,15 @@ int main(int argc, char* argv[]){
             exit(EXIT_FAILURE);
         }
         // printf("Received udp packets from server\n");
+        game::players[1].is_used = true;
+        copy_stations_to_map();
         pkt_type = process_packet(buffer_recv_game);
         if (pkt_type==GAME_PROCESS_PKT){
-            process_game(buffer_recv_game, MAX_COUNT_BYTES, players); 
+            process_game(buffer_recv_game, MAX_COUNT_BYTES, game::players); 
             while(1) {
-                print_station(ts,map_screen);
-                update_player_pos(players[user_id], map_screen);
+                // print_station(ts,map_screen);
+                game::player_index = user_id;
+                game_loop();
                 // vector<int>::iterator it_x = find(x.begin(),x.end(),players[0].x_coord);
                 // vector<int>::iterator it_y = find(y.begin(),y.end(),players[0].y_coord);
                 // if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
@@ -425,7 +445,7 @@ int main(int argc, char* argv[]){
                     exit(EXIT_FAILURE);
                 }
                 pkt_type = process_packet(buffer_recv_game);
-                process_game(buffer_recv_game, MAX_COUNT_BYTES, players); 
+                process_game(buffer_recv_game, MAX_COUNT_BYTES, game::players); 
                 if (pkt_type==GAME_END_PKT){
                     endwin();
                     break;
@@ -449,4 +469,3 @@ int main(int argc, char* argv[]){
 }
     
      
-

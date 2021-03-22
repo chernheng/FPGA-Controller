@@ -13,6 +13,16 @@ int addrlen = sizeof(address);
 clients_info clients;
 vector<string> player_names;
 
+//empty function so makefile doesnt complain
+int create_connection_socket(string server_ip)
+{ 
+    return 0; 
+} 
+
+int create_udp_connection_socket(string server_ip){
+    return 0; 
+}
+
 
 //function to set up socket connection
 int create_connection_socket()
@@ -235,7 +245,7 @@ int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
 }
 
 
-int game_process_packet(client_server_pkt *buffer_send, player *players, int id)
+int game_process_packet(client_server_pkt *buffer_send, player *players, int id, bool move)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
@@ -246,24 +256,27 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id)
     //testing
     char usr;
     cin >> usr;
-    
-    switch (usr)
-    {
-        case 'w':
-        players[id].move(UP_DIR, 1);
-        break;
-        case 'a':
-        players[id].move(LF_DIR, 1);
-        break;
-        case 's':
-        players[id].move(DN_DIR, 1);
-        break;
-        case 'd':
-        players[id].move(RT_DIR, 1);
-        break;
+    if (move){
+        switch (usr)
+        {
+            case 'w':
+            players[id].move(UP_DIR, 1);
+            break;
+            case 'a':
+            players[id].move(LF_DIR, 1);
+            break;
+            case 's':
+            players[id].move(DN_DIR, 1);
+            break;
+            case 'd':
+            players[id].move(RT_DIR, 1);
+            break;
+        }
     }
-    send_packet.x_coord[id] = players[id].x_coord;
-    send_packet.y_coord[id] = players[id].y_coord;
+    for (int i =0;i<2;i++){
+        send_packet.x_coord[i] = players[i].x_coord;
+        send_packet.y_coord[i] = players[i].y_coord;
+    }
     if (usr=='q'){
 	    send_packet.packet_type = GAME_END_PKT;
     }
@@ -315,6 +328,12 @@ int process_connection_request(char *buffer_conn_req)
     //if after timeout fn and no other player connects - error msg - dont ack player
     //timeout fn to be set in either main fn or ack packet
     //clients_connected.push_back(address);
+    client_server_pkt *pkt_received = (client_server_pkt *)buffer_conn_req;
+    std::string name;
+    for(int i = 0; i<15;i++){
+        name[i] = pkt_received->name[i];
+    }
+    printf("%s has joined!\n", &(pkt_received->name[0]));
     
     if (clients.socket_descriptor.size() < 2)
     {
@@ -341,10 +360,6 @@ int process_usr_input(char *buffer_usr_input, int buffer_size)
     return 1;
 }
 
-void process_game_start(char *buffer_recv_game_start, int buffer_size)
-{
-    //to process display and player's coord.
-}
 
 void process_game(char *buffer_recv_game, int buffer_size)
 {
@@ -580,12 +595,18 @@ int main()
                 {
                     vector<int> x = ts[i].x_stn;
                     vector<int> y = ts[i].y_stn;
+                    bool move = true;
                     //sends game display during game
+                    vector<int>::iterator it_x = find(x.begin(),x.end(),players[i].x_coord);
+                    vector<int>::iterator it_y = find(y.begin(),y.end(),players[i].y_coord);
+                    if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
+                        move = false;
+                    }
                     client_server_pkt buffer_send_game;
                     int buffer_send_game_size;
                     //clients.buffer_send_game.push_back(&buffer_send_game);
                     //clients.buffer_send_game_size.push_back(buffer_send_game_size);
-                    buffer_send_game_size = game_process_packet(&buffer_send_game, players, i);
+                    buffer_send_game_size = game_process_packet(&buffer_send_game, players, i,move);
                     //send game in process corrd and display to client
                     //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
                     if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
@@ -596,13 +617,6 @@ int main()
                     
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
-                    vector<int>::iterator it_x = find(x.begin(),x.end(),players[i].x_coord);
-                    vector<int>::iterator it_y = find(y.begin(),y.end(),players[i].y_coord);
-                    if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
-                        while(getch() !='p'){
-                            //execute task
-                            }
-                    }
                 }
                 // for (int i = 0; i < clients.socket_descriptor.size(); i++)
                 // {

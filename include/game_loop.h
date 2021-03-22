@@ -4,6 +4,7 @@
 
 namespace game {
   extern int player_index;
+  extern std::string player_name;
   extern player players[6];
   extern int current_task;
   extern bool doing_task;

@@ -1,3 +1,4 @@
+#pragma once
 #include <unistd.h> 
 #include <stdio.h> 
 #include <sys/socket.h> 
@@ -16,10 +17,10 @@
 #include "../include/map.h"
 #include "../include/player.h"
 #include "../include/connection.h"
+#include "../include/game_loop.h"
 #define PORT 8080 
 
 using namespace std;
-
 //max count bytes from socket file descriptor
 //change this accordingly, corresponding to max paacket size that will be sent
 #define MAX_COUNT_BYTES    1024   
@@ -35,6 +36,7 @@ using namespace std;
 struct client_server_pkt{
     char client_mac_address[14]; //to differentiate btwn different clients on the same network
     uint8_t packet_type;
+    char name[15];
     char ch;
     int ts_x[4];
     int ts_y[4];
@@ -42,7 +44,6 @@ struct client_server_pkt{
     int x_coord[2];
     int y_coord[2];
     //TODO: add on what is needed
-
 };
 
 int create_connection_socket(string server_ip);
@@ -61,7 +62,7 @@ int process_packet(char* buffer_recv);
 
 int process_acknowledgement(char *buffer_recv, int buffer_size);
 
-char process_game_start(char* buffer_recv_game_start, int buffer_size, vector<int> &r,vector<int> &s,vector<int> &t);
+char process_game_start(char* buffer_recv_game_start, int buffer_size);
 
 void process_game(char* buffer_recv_game, int buffer_size, player *players);
 

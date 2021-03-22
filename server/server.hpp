@@ -1,3 +1,4 @@
+#pragma once
 #include <unistd.h> 
 #include <stdio.h> 
 #include <sys/socket.h> 
@@ -54,18 +55,19 @@ struct clients_info{
     vector<int> buffer_send_game_size;
 };
 
-struct client_server_pkt{
-    char client_mac_address[14];
-    uint8_t packet_type;
-    char ch;
-    int ts_x[4];
-    int ts_y[4];
-    int task[4];
-    int x_coord[2];
-    int y_coord[2];
-    //TODO: add on what is needed
+// struct client_server_pkt{
+//     char client_mac_address[14];
+//     uint8_t packet_type;
+//     char name[15];
+//     char ch;
+//     int ts_x[4];
+//     int ts_y[4];
+//     int task[4];
+//     int x_coord[2];
+//     int y_coord[2];
+//     //TODO: add on what is needed
 
-};
+// };
 
 int create_connection_socket();
 
@@ -77,7 +79,7 @@ int acknowledgement_packet(client_server_pkt* buffer_send);
 
 int game_start_packet(client_server_pkt* buffer_send, TaskStation ts);
 
-int game_process_packet(client_server_pkt* buffer_send, player *players,int id);
+int game_process_packet(client_server_pkt* buffer_send, player *players,int id, bool move);
 
 int reject_packet(client_server_pkt* buffer_send);
 
@@ -89,8 +91,6 @@ int process_connection_request(char* buffer_conn_req);
 int process_ready(char* buffer_recv, int buffer_size);
 
 int process_usr_input(char* buffer_usr_input, int buffer_size);
-
-void process_game_start(char* buffer_recv_game_start, int buffer_size);
 
 void process_game(char* buffer_recv_game, int buffer_size);
 

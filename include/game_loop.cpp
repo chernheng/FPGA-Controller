@@ -7,6 +7,7 @@
 
 namespace game {
   int player_index=0;
+  std::string player_name;
   player players[6];
   int current_task=0;
   bool doing_task=false;
@@ -15,12 +16,6 @@ namespace game {
 using namespace std;
 
 void game_loop() {
-  char ch;
-  while((ch= getch()) != 'q') {
-
-    // check for any incoming packets
-    check_game_packets();
-
     
     if (game::doing_task) {
       if (game::current_task==1) {
@@ -44,7 +39,7 @@ void game_loop() {
 
     
     wrefresh(map_screen);
-  }
+  
 }
 
 void copy_stations_to_map() {
