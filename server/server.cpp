@@ -631,7 +631,7 @@ int main()
                     FPGA_it = FPGA_mac.find(FPGA_index[i]);
                     client_it = mac_client.find(FPGA_it->second);
                     printf("client_index, %d\n",client_it->second);
-                    if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[client_it->second], vec_cliaddr_len[client_it->second])<0){
+                    if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
                         perror("sending udp bytes failed"); 
                         exit(EXIT_FAILURE); 
                         //printf("Error in udp bytes sent\n");
