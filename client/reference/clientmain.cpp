@@ -4,6 +4,13 @@
 
 using namespace std;
 
+int create_udp_connection_socket(string ip) {
+  return 0;
+}
+
+int create_connection_socket(string ip) {
+  return 0;
+}
 int main(int argc, char **argv) {
 
   // start ncurses

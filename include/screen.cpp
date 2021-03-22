@@ -12,7 +12,7 @@ WINDOW * info_screen;
 
 
 void start_ncurses() {
-  setlocale(LC_ALL, "");
+  // setlocale(LC_ALL, "");
   initscr();
   noecho(); // dont display what the user presses
   curs_set(0); // hide cursor
@@ -95,32 +95,32 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
   
   case '0':
     wattron(screen, COLOR_PAIR(P0_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P0_CLR));
     break;
   case '1':
     wattron(screen, COLOR_PAIR(P1_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P1_CLR));
     break;
   case '2':
     wattron(screen, COLOR_PAIR(P2_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P2_CLR));
     break;
   case '3':
     wattron(screen, COLOR_PAIR(P3_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P3_CLR));
     break;
   case '4':
     wattron(screen, COLOR_PAIR(P4_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos,std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P4_CLR));
     break;
   case '5':
     wattron(screen, COLOR_PAIR(P5_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P5_CLR));
     break;
 
@@ -369,4 +369,35 @@ void menu_screen() {
   wrefresh(form_win);
   delwin(form_win);
   
+}
+
+void print_char_to_screen_alt(WINDOW * screen, int x_pos, int y_pos, char c) {
+  std::string ch = std::string(1, c);
+  switch (c)
+  {
+  case '#':
+    wattron(screen, COLOR_PAIR(WALL_CLR));
+    mvwprintw(screen, y_pos, x_pos,std::string(1, ' ').c_str());
+    // mvwaddch(screen, y_pos, x_pos, ACS_CKBOARD);
+    wattroff(screen, COLOR_PAIR(WALL_CLR));
+    break;
+  
+  }
+}
+
+//
+//
+//
+//?  0                   20                  40                  60                  80                  100                 120
+//   X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name
+//
+void init_info_panel() {
+
+  // Print player characters
+  for (int i=0; i<6; i++) {
+    if (game::players[i].is_used) {
+      print_char_to_screen(info_screen, i*20, mp::info_screen_height-1, to_string(i)[0]);
+    }
+  }
+
 }
