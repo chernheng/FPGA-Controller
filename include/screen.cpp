@@ -12,7 +12,7 @@ WINDOW * info_screen;
 
 
 void start_ncurses() {
-  setlocale(LC_ALL, "");
+  // setlocale(LC_ALL, "");
   initscr();
   noecho(); // dont display what the user presses
   curs_set(0); // hide cursor
@@ -95,32 +95,32 @@ void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
   
   case '0':
     wattron(screen, COLOR_PAIR(P0_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P0_CLR));
     break;
   case '1':
     wattron(screen, COLOR_PAIR(P1_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P1_CLR));
     break;
   case '2':
     wattron(screen, COLOR_PAIR(P2_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P2_CLR));
     break;
   case '3':
     wattron(screen, COLOR_PAIR(P3_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P3_CLR));
     break;
   case '4':
     wattron(screen, COLOR_PAIR(P4_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos,std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P4_CLR));
     break;
   case '5':
     wattron(screen, COLOR_PAIR(P5_CLR));
-    mvwprintw(screen, y_pos, x_pos, ch.c_str());
+    mvwprintw(screen, y_pos, x_pos, std::string(1, 'X').c_str());
     wattroff(screen, COLOR_PAIR(P5_CLR));
     break;
 
@@ -184,12 +184,15 @@ void init_color_pairs() {
   init_pair(P3_CLR, COLOR_CYAN, COLOR_WHITE);
   init_pair(P4_CLR, COLOR_BLUE, COLOR_WHITE);
   init_pair(P5_CLR, COLOR_YELLOW, COLOR_WHITE);
-  init_pair(STNS_CLR, COLOR_GREEN, COLOR_BLACK);
+  init_pair(STNS_CLR, COLOR_GREEN, COLOR_WHITE);
   init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
   init_pair(WINDOW_CLR, COLOR_BLACK, COLOR_CYAN);
   init_pair(LANTERN_CLR, COLOR_YELLOW, COLOR_RED);
   init_pair(TELEPORT_CLR, COLOR_YELLOW, COLOR_MAGENTA);
   init_pair(WATER_CLR, COLOR_BLUE, COLOR_WHITE);
+  init_pair(INFO_TEXT_CLR, COLOR_BLACK, COLOR_WHITE);
+  init_pair(INFO_RED_CLR, COLOR_RED, COLOR_WHITE);
+  init_pair(INFO_ALERT_CLR, COLOR_WHITE, COLOR_RED);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
@@ -198,6 +201,7 @@ void update_player_pos(const player &p, WINDOW * screen) {
   if(get_map_char(p.x_coord, p.y_coord)=='L') {
     mp::map_array[p.y_coord][p.x_coord] = ' '; // remove lantern
     mp::vision_radius+=2;
+    info_panel_update_FOV_radius();
   }
   // calculate FOV
   mark_visible_cells(p.x_coord, p.y_coord);
@@ -369,4 +373,128 @@ void menu_screen() {
   wrefresh(form_win);
   delwin(form_win);
   
+}
+
+
+#define TASK_1_TEXT "                                                                "
+#define TASK_2_TEXT "Flip the switches into the correct position!"
+#define TASK_3_TEXT "Press the buttons!"
+#define TASK_4_TEXT "Use the switches to convert the number shown into binary!"
+#define TASK_5_TEXT "Press the button when the main LED lights up!"
+#define TASK_6_TEXT "Shake the device up and down!"
+
+
+//?  0            13     20           33
+//   Tasks Left : N      FOV Radius : N
+//?  0               16
+//   Complete Task : Task to do
+//
+//?  0                   20                  40                  60                  80                  100                 120
+//   X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name
+//
+
+void info_panel_update_no_tasks() {
+  int hud_y_coord = 0;
+  int no_of_tasks_left = game::players[game::player_index].tasks_left;
+  wattron(info_screen, COLOR_PAIR(INFO_RED_CLR));
+  string txt = to_string(no_of_tasks_left) + " ";
+  mvwprintw(info_screen, hud_y_coord, 13, txt.c_str());
+  wattroff(info_screen, COLOR_PAIR(INFO_RED_CLR));
+
+  wrefresh(info_screen);
+}
+
+void info_panel_update_FOV_radius() {
+  int hud_y_coord = 0;
+
+  wattron(info_screen, COLOR_PAIR(INFO_RED_CLR));
+  string txt = to_string(mp::vision_radius) + " ";
+  mvwprintw(info_screen, hud_y_coord, 33, txt.c_str());
+  wattroff(info_screen, COLOR_PAIR(INFO_RED_CLR));
+
+  wrefresh(info_screen);
+}
+
+void init_info_panel() {
+
+  // Paint whole screen white
+  for (int i=0; i<mp::info_screen_height; i++) {
+    for (int j=0; j<mp::info_screen_width; j++) {
+      print_char_to_screen(info_screen, j, i, ' ');
+    }
+  }
+
+  // Print player characters
+  int player_name_y_coord = mp::info_screen_height-1;
+  for (int i=0; i<6; i++) {
+    if (game::players[i].is_used) {
+      print_char_to_screen(info_screen, i*20, player_name_y_coord, to_string(i)[0]);
+      string txt = ": " + game::players[i].name;
+      wattron(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+      mvwprintw(info_screen, player_name_y_coord, (i*20)+2, txt.c_str());
+      wattroff(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+    }
+  }
+
+  // Print text for "Tasks Left", "FOV"
+  int hud_y_coord = 0;
+  wattron(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+  mvwprintw(info_screen, hud_y_coord, 0, string("Tasks Left :").c_str());
+  mvwprintw(info_screen, hud_y_coord, 20, string("FOV Radius :").c_str());
+  wattroff(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+
+  info_panel_update_FOV_radius();
+  info_panel_update_no_tasks();
+  wrefresh(info_screen);
+
+}
+
+void info_panel_update_task(int task_id) {
+  int task_y_coord = 1;
+  switch (task_id)
+  {
+  case 1:
+    for (int j=0; j<mp::info_screen_width; j++) {
+      print_char_to_screen(info_screen, j, task_y_coord, ' ');
+    }
+    break;
+
+  case 2:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_2_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 3:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_3_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 4:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_4_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 5:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_5_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 6:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_6_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  }
+
+  wrefresh(info_screen);
 }

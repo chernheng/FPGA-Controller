@@ -4,6 +4,13 @@
 
 using namespace std;
 
+int create_udp_connection_socket(string ip) {
+  return 0;
+}
+
+int create_connection_socket(string ip) {
+  return 0;
+}
 int main(int argc, char **argv) {
 
   // start ncurses
@@ -19,6 +26,7 @@ int main(int argc, char **argv) {
   print_map_to_screen(map_screen);
   wrefresh(map_screen);
 
+  init_info_panel();
   getch();
   TaskStation t1;
   vector<int> x = t1.x_stn;

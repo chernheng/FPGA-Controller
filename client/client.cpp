@@ -421,6 +421,7 @@ int main(int argc, char* argv[]){
         }
         // printf("Received udp packets from server\n");
         game::players[1].is_used = true;
+        init_info_panel();
         copy_stations_to_map();
         pkt_type = process_packet(buffer_recv_game);
         if (pkt_type==GAME_PROCESS_PKT){
