@@ -192,6 +192,7 @@ void init_color_pairs() {
   init_pair(WATER_CLR, COLOR_BLUE, COLOR_WHITE);
   init_pair(INFO_TEXT_CLR, COLOR_BLACK, COLOR_WHITE);
   init_pair(INFO_RED_CLR, COLOR_RED, COLOR_WHITE);
+  init_pair(INFO_ALERT_CLR, COLOR_WHITE, COLOR_RED);
 }
 
 void update_player_pos(const player &p, WINDOW * screen) {
@@ -374,20 +375,8 @@ void menu_screen() {
   
 }
 
-void print_char_to_screen_alt(WINDOW * screen, int x_pos, int y_pos, char c) {
-  std::string ch = std::string(1, c);
-  switch (c)
-  {
-  case '#':
-    wattron(screen, COLOR_PAIR(WALL_CLR));
-    mvwprintw(screen, y_pos, x_pos,std::string(1, ' ').c_str());
-    // mvwaddch(screen, y_pos, x_pos, ACS_CKBOARD);
-    wattroff(screen, COLOR_PAIR(WALL_CLR));
-    break;
-  
-  }
-}
 
+#define TASK_1_TEXT "                                                                "
 #define TASK_2_TEXT "Flip the switches into the correct position!"
 #define TASK_3_TEXT "Press the buttons!"
 #define TASK_4_TEXT "Use the switches to convert the number shown into binary!"
@@ -397,7 +386,8 @@ void print_char_to_screen_alt(WINDOW * screen, int x_pos, int y_pos, char c) {
 
 //?  0            13     20           33
 //   Tasks Left : N      FOV Radius : N
-//   Complete Task: 
+//?  0               16
+//   Complete Task : Task to do
 //
 //?  0                   20                  40                  60                  80                  100                 120
 //   X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name  X : Player____Name
@@ -410,6 +400,8 @@ void info_panel_update_no_tasks() {
   string txt = to_string(no_of_tasks_left) + " ";
   mvwprintw(info_screen, hud_y_coord, 13, txt.c_str());
   wattroff(info_screen, COLOR_PAIR(INFO_RED_CLR));
+
+  wrefresh(info_screen);
 }
 
 void info_panel_update_FOV_radius() {
@@ -419,6 +411,8 @@ void info_panel_update_FOV_radius() {
   string txt = to_string(mp::vision_radius) + " ";
   mvwprintw(info_screen, hud_y_coord, 33, txt.c_str());
   wattroff(info_screen, COLOR_PAIR(INFO_RED_CLR));
+
+  wrefresh(info_screen);
 }
 
 void init_info_panel() {
@@ -453,4 +447,54 @@ void init_info_panel() {
   info_panel_update_no_tasks();
   wrefresh(info_screen);
 
+}
+
+void info_panel_update_task(int task_id) {
+  int task_y_coord = 1;
+  switch (task_id)
+  {
+  case 1:
+    for (int j=0; j<mp::info_screen_width; j++) {
+      print_char_to_screen(info_screen, j, task_y_coord, ' ');
+    }
+    break;
+
+  case 2:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_2_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 3:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_3_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 4:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_4_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 5:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_5_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 6:
+    wattron(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_6_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  }
+
+  wrefresh(info_screen);
 }

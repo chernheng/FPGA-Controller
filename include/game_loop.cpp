@@ -31,7 +31,7 @@ void game_loop() {
     // if doing a task, display task on screen
     if (game::current_task > 1) {
       game::doing_task = true;
-      // TODO Display task on screen
+      info_panel_update_task(game::current_task);
     }
 
     // update player vision

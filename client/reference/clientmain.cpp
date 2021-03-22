@@ -61,7 +61,6 @@ int main(int argc, char **argv) {
 
     update_player_pos(p1, map_screen);
     wrefresh(map_screen);
-    wrefresh(info_screen);
   }
 
 
