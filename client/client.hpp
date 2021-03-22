@@ -34,6 +34,7 @@ using namespace std;
 #define GAME_END_PKT           7
 
 struct client_server_pkt{
+    uint8_t FGPA; //is it FPGA or host
     char client_mac_address[14]; //to differentiate btwn different clients on the same network
     uint8_t packet_type;
     char name[15];
