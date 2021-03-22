@@ -224,7 +224,7 @@ void update_player_pos(const player &p, WINDOW * screen) {
   mp::visible_cells.clear();
   
   // print new position of player
-  print_char_to_screen(screen, p.x_coord, p.y_coord, 'X');
+  print_char_to_screen(screen, p.x_coord, p.y_coord, std::to_string(game::player_index)[0]);
 
 }
 
