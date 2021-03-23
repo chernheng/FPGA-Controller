@@ -19,6 +19,7 @@ void info_panel_update_no_tasks();
 void info_panel_update_task(int task_id);
 
 void print_map_to_screen(WINDOW * screen);
+void print_splash_screen(WINDOW * screen);
 void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c);
 void init_color_pairs();
 

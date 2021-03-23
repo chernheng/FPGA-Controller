@@ -76,6 +76,20 @@ void print_map_to_screen(WINDOW * screen) {
   }
 }
 
+void print_splash_screen(WINDOW * screen) {
+
+  for (int i=0; i<mp::map_height; i++) {
+
+    for (int j=0; j<mp::map_width; j++) {
+      print_char_to_screen(screen, j, i, get_map_char(j, i));
+    }
+
+
+  }
+
+  wrefresh(screen);
+}
+
 void print_char_to_screen(WINDOW * screen, int x_pos, int y_pos, char c) {
   std::string ch = std::string(1, c);
   switch (c)
@@ -286,7 +300,7 @@ void menu_screen() {
   /* Initialize the fields */
   
   field[0] = new_field(1, 15, 1, 22, 0, 0);
-  field[1] = new_field(1, 10, 2, 23, 0, 0);
+  field[1] = new_field(1, 14, 2, 23, 0, 0);
   field[2] = NULL;
   /* Set field options */
   set_field_back(field[0], A_UNDERLINE); /* Print a line for the option */
@@ -391,7 +405,7 @@ void menu_screen() {
 
 #define TASK_1_TEXT "                                                                "
 #define TASK_2_TEXT "Flip the switches into the correct position!"
-#define TASK_3_TEXT "Press the buttons!"
+#define TASK_3_TEXT "Press the buttons until the number reaches 0!"
 #define TASK_4_TEXT "Use the switches to convert the number shown into binary!"
 #define TASK_5_TEXT "Press the button when the main LED lights up!"
 #define TASK_6_TEXT "Shake the device up and down!"

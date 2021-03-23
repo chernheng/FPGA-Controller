@@ -304,6 +304,8 @@ int main(int argc, char* argv[]){
     //     //socket is not set-up properly - TODO: what to respond with?
     // }
     start_ncurses();
+    readmap("maps/splash1.txt");
+    print_splash_screen(map_screen);
     menu_screen();
     char mac_address[14];
     if (get_mac_address(mac_address)!=0){
