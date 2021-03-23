@@ -14,8 +14,8 @@ clients_info clients;
 vector<string> player_names;
 vector<int> FPGA_index; //how many FPGA and their index on the socket descriptor, used to just send to FPGA
 vector<int> client_index; // how many clients and their index, used to just send to client
-std::map<int,std::string> FPGA_mac; // maps FPGA to mac address
-std::map<std::string,int> mac_client;// maps mac address to client index
+std::map<int,std::string> client_mac; // maps FPGA to mac address
+std::map<std::string,int> mac_FPGA;// maps mac address to client index
 char all_names[6][15];
 
 //empty function so makefile doesnt complain
@@ -256,7 +256,7 @@ int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
 }
 
 
-int game_process_packet(client_server_pkt *buffer_send, player *players, int id, bool move)
+int game_process_packet(client_server_pkt *buffer_send, player *players, int id, bool move, int8_t x_value, int8_t y_value)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
@@ -264,32 +264,27 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id,
 
 
     //to set-up packet_fields
-    //testing
-    char usr;
-    cin >> usr;
     if (move){
-        switch (usr)
-        {
-            case 'w':
-            players[id].move(UP_DIR, 1);
-            break;
-            case 'a':
-            players[id].move(LF_DIR, 1);
-            break;
-            case 's':
-            players[id].move(DN_DIR, 1);
-            break;
-            case 'd':
-            players[id].move(RT_DIR, 1);
-            break;
+        while (x_value || y_value) {
+            if (x_value >0){
+                players[id].move(RT_DIR, 1);
+                x_value--;
+            } else if(x_value<0){
+                players[id].move(LF_DIR, 1);
+                x_value++;
+            }
+            if (y_value >0){
+                players[id].move(UP_DIR, 1);
+                y_value--;
+            } else if(y_value<0){
+                players[id].move(DN_DIR, 1);
+                y_value++;
+            }
         }
     }
     for (int i =0;i<client_index.size();i++){
         send_packet.x_coord[i] = players[i].x_coord;
         send_packet.y_coord[i] = players[i].y_coord;
-    }
-    if (usr=='q'){
-	    send_packet.packet_type = GAME_END_PKT;
     }
 
     *buffer_send = send_packet;
@@ -394,7 +389,7 @@ int process_connection_request_fpga(int id, fpga_server_pkt* fpga_pkt_recv)
         printf("Fpga packet received.\n");
 
     string mac_addr(mac_fpga);
-    FPGA_mac.insert(pair<int,std::string>(id,mac_addr));
+    mac_FPGA.insert(pair<std::string,int>(mac_addr,id));
     FPGA_index.push_back(id);
     
     if (clients.socket_descriptor.size() < 2)
@@ -431,7 +426,7 @@ int process_connection_request_client(char *buffer_conn_req, int id)
             
 
     string mac_addr(mac);
-    mac_client.insert(pair<std::string,int>(mac_addr,id));
+    client_mac.insert(pair<int,std::string>(id,mac_addr));
     client_index.push_back(id);
     printf("client pushback done\n");
     
@@ -693,7 +688,7 @@ int main()
 
         while (sent_pkt_type != GAME_END_PKT)
         {
-            for (int i = 0; i < clients.socket_descriptor.size(); i++)
+            for (int i = 0; i < client_index.size(); i++)
             {
                 clients.buffer_usr_input.push_back(empty_buffer);
                 // if ((read(clients.socket_descriptor[i], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0)
@@ -704,7 +699,7 @@ int main()
                 int n;
                 vec_cliaddr.push_back(cliaddr);
                 vec_cliaddr_len.push_back(sizeof(cliaddr));
-                if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[i], &vec_cliaddr_len[i])<0){
+                if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[client_index[i]], &vec_cliaddr_len[client_index[i]])<0){
                     printf("Error in udp bytes received\n");
                 }
                 //clients.buffer_usr_input[i][n] = '\0';
@@ -715,8 +710,8 @@ int main()
                 // }
                 printf("Receive udp game input packets from client\n");
                 clients.buffer_usr_input[i][n]='\0';
-                for (int i=0; i<clients.socket_descriptor.size(); i++){
-                    if(clients.address[i].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
+                for (int i=0; i<client_index.size(); i++){
+                    if(clients.address[client_index[i]].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
                         printf("Processing user input\n");
                         if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
                         {
@@ -759,19 +754,38 @@ int main()
                     if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
                         move = false;
                     }
+                    std::map<int,std::string>::iterator client_it;
+                    std::map<std::string,int>::iterator FPGA_it;
+                    client_it = client_mac.find(client_index[i]);
+                    FPGA_it = mac_FPGA.find(client_it->second);
+                    printf("FPGA_index: %d\n",FPGA_it->second);
+
+                    char sendchar = '1';
+                    printf("Sending char to fpga\n");
+                    send(clients.socket_descriptor[FPGA_it->second], &sendchar, sizeof(sendchar), 0);
+
+                    char recv_data[MAX_COUNT_BYTES] = {0};
+                    int iBytesReceived;
+                    //error returns -1
+                    if ((iBytesReceived = read(clients.socket_descriptor[FPGA_it->second], recv_data, MAX_COUNT_BYTES)) < 0)
+                    {
+                        printf("Error in reading received bytes\n");
+                    }
+                    fpga_server_pkt fpga_pkt;
+                    int process = process_fpga_coord(recv_data, &fpga_pkt);
+                    int8_t x_value = fpga_pkt.x_coord;
+                    int8_t y_value = fpga_pkt.y_coord;
+
                     client_server_pkt buffer_send_game;
                     int buffer_send_game_size;
+
                     //clients.buffer_send_game.push_back(&buffer_send_game);
                     //clients.buffer_send_game_size.push_back(buffer_send_game_size);
-                    buffer_send_game_size = game_process_packet(&buffer_send_game, players, i,move);
+                    buffer_send_game_size = game_process_packet(&buffer_send_game, players, i,move, x_value, y_value);
                     //send game in process corrd and display to client
                     //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
-                    std::map<int,std::string>::iterator FPGA_it;
-                    std::map<std::string,int>::iterator client_it;
-                    FPGA_it = FPGA_mac.find(FPGA_index[i]);
-                    client_it = mac_client.find(FPGA_it->second);
-                    printf("client_index, %d\n",client_it->second);
-                    if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
+                    
+                    if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[client_index[i]], vec_cliaddr_len[client_index[i]])<0){
                         perror("sending udp bytes failed"); 
                         exit(EXIT_FAILURE); 
                         //printf("Error in udp bytes sent\n");

@@ -89,7 +89,7 @@ int acknowledgement_packet(client_server_pkt* buffer_send);
 
 int game_start_packet(client_server_pkt* buffer_send, TaskStation ts);
 
-int game_process_packet(client_server_pkt* buffer_send, player *players,int id, bool move);
+int game_process_packet(client_server_pkt* buffer_send, player *players,int id, bool move, int8_t x_value, int8_t y_value);
 
 int reject_packet(client_server_pkt* buffer_send);
 

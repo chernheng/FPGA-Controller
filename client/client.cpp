@@ -59,7 +59,7 @@ int create_udp_connection_socket(string server_ip){
         printf("socket creation failed"); 
         exit(0); 
     } 
-    _time.tv_sec = 5;
+    _time.tv_sec = 20;
   
     memset(&serv_addr_udp, 0, sizeof(serv_addr_udp)); 
     serv_addr_udp.sin_family = AF_INET; 
