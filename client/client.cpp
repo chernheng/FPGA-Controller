@@ -406,7 +406,7 @@ int main(int argc, char* argv[]){
     while(pkt_type!=GAME_END_PKT){
         //buffer_recv_game = 0; 
         //send game input to server
-        buffer_send_input_size = game_input_packet(&buffer_send_input, mac_address);
+        // buffer_send_input_size = game_input_packet(&buffer_send_input, mac_address);
         // printf("Sending packets on udp\n");
         //send(udp_sockfd , (char *)&buffer_send_input , buffer_send_input_size , 0 ); 
         if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
@@ -434,6 +434,12 @@ int main(int argc, char* argv[]){
         if (pkt_type==GAME_PROCESS_PKT){
             process_game(buffer_recv_game, MAX_COUNT_BYTES, game::players); 
             while(1) {
+                if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
+                printf("Error in sending udp packet\n");
+                cout << strerror(errno) << '\n';
+                endwin();
+                exit(EXIT_FAILURE);
+        }
                 // print_station(ts,map_screen);
                 game::player_index = user_id;
                 game_loop();
