@@ -43,8 +43,8 @@ struct client_server_pkt{
     int ts_x[4];
     int ts_y[4];
     int task[4];
-    int x_coord[2];
-    int y_coord[2];
+    int x_coord[6];
+    int y_coord[6];
     char all_names[6][15];
     int total_players;
     //TODO: add on what is needed
