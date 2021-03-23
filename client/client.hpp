@@ -35,7 +35,7 @@ using namespace std;
 #define GAME_END_PKT           7
 
 struct client_server_pkt{
-    uint8_t FGPA; //is it FPGA or host
+    uint8_t fpga_or_host; //is it FPGA or host
     char client_mac_address[14]; //to differentiate btwn different clients on the same network
     uint8_t packet_type;
     char name[15];
@@ -48,6 +48,15 @@ struct client_server_pkt{
     char all_names[6][15];
     int total_players;
     //TODO: add on what is needed
+};
+
+struct fpga_server_pkt{
+    uint8_t fpga_or_host;
+    char mac_addr[6];
+    int8_t x_coord;
+    int8_t y_coord;
+    int8_t task_complete;
+    // char mac_addr[6];
 };
 
 int create_connection_socket(string server_ip);

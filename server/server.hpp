@@ -69,6 +69,16 @@ struct clients_info{
 
 // };
 
+
+// struct fpga_server_pkt{
+//     uint8_t fpga_or_host;
+//     char mac_addr[6];
+//     int8_t x_coord;
+//     int8_t y_coord;
+//     int8_t task_complete;
+//     // char mac_addr[6];
+// };
+
 int create_connection_socket();
 
 int create_udp_connection_socket();
@@ -85,8 +95,12 @@ int reject_packet(client_server_pkt* buffer_send);
 
 
 int process_packet(char* buffer_recv);
+int process_packet_header(char *buffer_recv);
+int process_fpga_coord(char *buffer_recv, fpga_server_pkt* fpga_pkt);
 
-int process_connection_request(char* buffer_conn_req, int id);
+
+int process_connection_request_fpga(int id, fpga_server_pkt* fpga_pkt_recv);
+int process_connection_request_client(char *buffer_conn_req, int id);
 
 int process_ready(char* buffer_recv, int buffer_size);
 

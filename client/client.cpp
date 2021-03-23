@@ -186,6 +186,7 @@ int connection_request_packet(client_server_pkt* buffer_send, char *mac_address)
     //printf("mac address: %s\n", mac);
     // send_packet.client_mac_address = mac_address;
     send_packet.packet_type = CONNECTION_REQ_PKT;
+    send_packet.fpga_or_host = 0;
 
 
     *buffer_send = send_packet;

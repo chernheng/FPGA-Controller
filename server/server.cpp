@@ -333,7 +333,80 @@ int process_packet(char *buffer_recv)
     return pkt_type;
 }
 
-int process_connection_request(char *buffer_conn_req, int id)
+int process_packet_header(char *buffer_recv){
+    int8_t pkt_type;
+    // client_server_pkt *pkt_received = (client_server_pkt *)buffer_recv;
+    pkt_type = (*buffer_recv);
+    if (pkt_type==1){
+        //fpga packet received
+        printf("Fpga packet received.\n");
+    }else{
+        printf("Host packet received; packet type: %d\n", pkt_type);
+    }
+    return pkt_type;
+}
+
+int process_fpga_coord(char *buffer_recv, fpga_server_pkt* fpga_pkt){
+    
+    fpga_server_pkt fpga_pkt_received;
+    fpga_pkt_received.fpga_or_host = buffer_recv[0];
+    
+    for (int i=0; i<6; i++){
+        fpga_pkt_received.mac_addr[i] = buffer_recv[i+1];
+    }
+    fpga_pkt_received.x_coord = buffer_recv[7];
+    fpga_pkt_received.y_coord = buffer_recv[8];
+    fpga_pkt_received.task_complete = buffer_recv[9];
+
+
+    
+    printf("mac address: %02x:%02x:%02x:%02x:%02x:%02x\n", 
+            (unsigned char)fpga_pkt_received.mac_addr[0],
+            (unsigned char)fpga_pkt_received.mac_addr[1],
+            (unsigned char)fpga_pkt_received.mac_addr[2],
+            (unsigned char)fpga_pkt_received.mac_addr[3],
+            (unsigned char)fpga_pkt_received.mac_addr[4],
+            (unsigned char)fpga_pkt_received.mac_addr[5]);
+
+    printf("x-coord: %d\n", fpga_pkt_received.x_coord);
+    printf("y-coord: %d\n",fpga_pkt_received.y_coord);
+    printf("task_complete: %d\n",fpga_pkt_received.task_complete);
+
+    *fpga_pkt = fpga_pkt_received;
+    return 1;
+}
+
+int process_connection_request_fpga(int id, fpga_server_pkt* fpga_pkt_recv)
+{
+    //to check a global map that stores current clients? - if size>=2, then will send ack, else will wait for another player to connect
+    //if after timeout fn and no other player connects - error msg - dont ack player
+    //timeout fn to be set in either main fn or ack packet
+    //clients_connected.push_back(address);
+    //fpga packet received
+    char mac_fpga[18];
+    sprintf(mac_fpga, "%02x:%02x:%02x:%02x:%02x:%02x", 
+        (unsigned char)fpga_pkt_recv->mac_addr[0],
+        (unsigned char)fpga_pkt_recv->mac_addr[1],
+        (unsigned char)fpga_pkt_recv->mac_addr[2],
+        (unsigned char)fpga_pkt_recv->mac_addr[3],
+        (unsigned char)fpga_pkt_recv->mac_addr[4],
+        (unsigned char)fpga_pkt_recv->mac_addr[5]);
+        printf("Fpga packet received.\n");
+
+    string mac_addr(mac_fpga);
+    FPGA_mac.insert(pair<int,std::string>(id,mac_addr));
+    FPGA_index.push_back(id);
+    
+    if (clients.socket_descriptor.size() < 2)
+    {
+        printf("Waiting for other players to connect...\n");
+        return 0;
+    }
+    printf("Minimum number of players reached\n");
+    return 1;
+}
+
+int process_connection_request_client(char *buffer_conn_req, int id)
 {
     //to check a global map that stores current clients? - if size>=2, then will send ack, else will wait for another player to connect
     //if after timeout fn and no other player connects - error msg - dont ack player
@@ -355,12 +428,12 @@ int process_connection_request(char *buffer_conn_req, int id)
             (unsigned char)pkt_received->client_mac_address[3],
             (unsigned char)pkt_received->client_mac_address[4],
             (unsigned char)pkt_received->client_mac_address[5]);
+            
 
     string mac_addr(mac);
     mac_client.insert(pair<std::string,int>(mac_addr,id));
-    FPGA_mac.insert(pair<int,std::string>(id,mac_addr));
-    FPGA_index.push_back(id);
     client_index.push_back(id);
+    printf("client pushback done\n");
     
     if (clients.socket_descriptor.size() < 2)
     {
@@ -442,24 +515,45 @@ int main()
             printf("Error in reading received bytes\n");
         }
 
-        //check if received packet is of connection req type
+        //check if packet is of fpga packet
+        int pkt_header_type;
+        pkt_header_type = process_packet_header(clients.buffer_conn_req[0]);
+
+        // //check if received packet is of connection req type
         int pkt_type;
-        pkt_type = process_packet(clients.buffer_conn_req[0]);
-        if (pkt_type != CONNECTION_REQ_PKT)
-        {
-            printf("Detected wrong packet response from client.\n");
-        }
+        
+        // pkt_type = process_packet(clients.buffer_conn_req[0]);
+        // if (pkt_type != CONNECTION_REQ_PKT)
+        // {
+        //     printf("Detected wrong packet response from client.\n");
+        // }
 
+        if (pkt_header_type == 0){
         //when there is not enough players - wait for another client's connection
-        if (process_connection_request(clients.buffer_conn_req[0], 0) != 1)
-        {
-            //int timeout=10;
-            printf("Attempting to detect second client\n");
-
-            int iResult = AcceptClient(server_fd);
-            if (iResult == 0)
+            if (process_connection_request_client(clients.buffer_conn_req[0], 0) != 1)
             {
-                //some error occured with the sockets
+                //int timeout=10;
+                printf("Attempting to detect second client\n");
+
+                int iResult = AcceptClient(server_fd);
+                if (iResult == 0)
+                {
+                    //some error occured with the sockets
+                }
+            }
+        } else if (pkt_header_type == 1) {
+            fpga_server_pkt fpga_pkt;
+            int process = process_fpga_coord(clients.buffer_conn_req[0], &fpga_pkt);
+            if (process_connection_request_fpga(0, &fpga_pkt) != 1)
+            {
+                //int timeout=10;
+                printf("Attempting to detect second client\n");
+
+                int iResult = AcceptClient(server_fd);
+                if (iResult == 0)
+                {
+                    //some error occured with the sockets
+                }
             }
         }
 
@@ -467,14 +561,22 @@ int main()
         for (int i = 1; i < clients.socket_descriptor.size(); i++)
         {
             printf("Processing client number: %d\n", i);
-            pkt_type = process_packet(clients.buffer_conn_req[i]);
-            if (pkt_type == CONNECTION_REQ_PKT)
-            {
-               process_connection_request(clients.buffer_conn_req[i], i);
-            }
-            else
-            {
-                printf("Detected wrong packet response from client.\n");
+            pkt_header_type = process_packet_header(clients.buffer_conn_req[0]);
+            if (pkt_header_type == 0){
+            //when there is not enough players - wait for another client's connection
+                if (process_connection_request_client(clients.buffer_conn_req[0], i) != 1)
+                {
+                    //int timeout=10;
+                    printf("connection req failed\n");
+                }
+            } else if (pkt_header_type == 1) {
+                fpga_server_pkt fpga_pkt;
+                int process = process_fpga_coord(clients.buffer_conn_req[0], &fpga_pkt);
+                if (process_connection_request_fpga(i, &fpga_pkt) != 1)
+                {
+                    //int timeout=10;
+                    printf("connection req failed\n");
+                }
             }
         }
 
@@ -618,7 +720,7 @@ int main()
                 // }
             }
             while(1){
-                for (int i = 0; i < FPGA_index.size(); i++)
+                for (int i = 0; i < client_index.size(); i++)
                 {
                     vector<int> x = ts[i].x_stn;
                     vector<int> y = ts[i].y_stn;
