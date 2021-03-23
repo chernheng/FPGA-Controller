@@ -555,6 +555,7 @@ int main()
                     //some error occured with the sockets
                 }
             }
+             
         }
 
         //for each client connection:
@@ -576,10 +577,7 @@ int main()
                 {
                     //int timeout=10;
                     printf("connection req failed\n");
-                }
-                char sendchar = '0';
-                printf("Sending char to fpga\n");
-                send(clients.socket_descriptor[i], &sendchar, sizeof(sendchar), 0);                
+                }        
             }
         }
 
@@ -590,7 +588,7 @@ int main()
         char buffer_send_game;
         int buffer_send_game_size;
 
-        for (int i = 0; i < clients.socket_descriptor.size(); i++)
+        for (int i = 0; i < client_index.size(); i++)
         {
             printf("Processing client number: %d\n", i);
             client_server_pkt buffer_send_ack;
@@ -601,15 +599,15 @@ int main()
             buffer_send_ack_size = acknowledgement_packet(&buffer_send_ack);
 
             //send ack packet to client
-            send(clients.socket_descriptor[i], (char *)&buffer_send_ack, buffer_send_ack_size, 0);
+            send(clients.socket_descriptor[client_index[i]], (char *)&buffer_send_ack, buffer_send_ack_size, 0);
             printf("Acknowledge packet sent\n");
         }
-        for (int i = 0; i < clients.socket_descriptor.size(); i++)
+        for (int i = 0; i < client_index.size(); i++)
         {
             //receive play ready packet from client
             //clients.buffer_ready.push_back(empty_buffer);
             char recv_buffer_ready[1024];
-            if ((read(clients.socket_descriptor[i], recv_buffer_ready, MAX_COUNT_BYTES)) < 0)
+            if ((read(clients.socket_descriptor[client_index[i]], recv_buffer_ready, MAX_COUNT_BYTES)) < 0)
             {
                 printf("Error in reading received bytes\n");
             }
@@ -628,7 +626,31 @@ int main()
             {
                 printf("Detected wrong packet response from client.\n");
             }
+
         }
+
+        for (int i = 0; i < FPGA_index.size(); i++)
+        {
+            char sendchar = '0';
+            printf("Sending char to fpga\n");
+            send(clients.socket_descriptor[FPGA_index[i]], &sendchar, sizeof(sendchar), 0);     
+
+            char recv_data[MAX_COUNT_BYTES] = {0};
+            int iBytesReceived;
+            //error returns -1
+            if ((iBytesReceived = read(clients.socket_descriptor[FPGA_index[i]], recv_data, MAX_COUNT_BYTES)) < 0)
+            {
+                printf("Error in reading received bytes\n");
+            }
+            printf("FPGA %d ready\n", i);
+
+        }
+
+
+
+
+
+
         readmap("maps/map1.txt");
         TaskStation ts[client_index.size()];
         for (int i = 0; i<client_index.size();i++){
@@ -637,17 +659,20 @@ int main()
         int sent_pkt_type;
         for (int i = 0; i < client_index.size(); i++)
         {
-            //send game start packet
-            //set-up connection game-start coord. and game start display
-            client_server_pkt buffer_send_game_start;
-            int buffer_send_game_start_size;
-            // clients.buffer_send_game_start.push_back(&buffer_send_game_start);
-            // clients.buffer_send_game_start_size.push_back(buffer_send_game_start_size);
-            buffer_send_game_start_size = game_start_packet(&buffer_send_game_start, ts[i]);
-            //send game start coord and display to client
-            send(clients.socket_descriptor[i], (char *)&buffer_send_game_start, buffer_send_game_start_size, 0);
-            printf("Game start coordinates and game display sent\n");
-            sent_pkt_type = process_packet((char *)&buffer_send_game_start);
+            pkt_header_type = process_packet_header(clients.buffer_conn_req[i]);
+            if (pkt_header_type == 0){
+                //send game start packet
+                //set-up connection game-start coord. and game start display
+                client_server_pkt buffer_send_game_start;
+                int buffer_send_game_start_size;
+                // clients.buffer_send_game_start.push_back(&buffer_send_game_start);
+                // clients.buffer_send_game_start_size.push_back(buffer_send_game_start_size);
+                buffer_send_game_start_size = game_start_packet(&buffer_send_game_start, ts[i]);
+                //send game start coord and display to client
+                send(clients.socket_descriptor[client_index[i]], (char *)&buffer_send_game_start, buffer_send_game_start_size, 0);
+                printf("Game start coordinates and game display sent\n");
+                sent_pkt_type = process_packet((char *)&buffer_send_game_start);
+            }
         }
         // sendto(server_fd, clients.buffer_send_game_start[i], clients.buffer_send_game_start_size[i], MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
         //         len);
