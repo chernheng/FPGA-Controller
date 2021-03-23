@@ -574,26 +574,26 @@ int main()
                 int n;
                 vec_cliaddr.push_back(cliaddr);
                 vec_cliaddr_len.push_back(sizeof(cliaddr));
-                if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[i], &vec_cliaddr_len[i])<0){
-                    printf("Error in udp bytes received\n");
-                }
+                // if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[i], &vec_cliaddr_len[i])<0){
+                //     printf("Error in udp bytes received\n");
+                // }
                 //clients.buffer_usr_input[i][n] = '\0';
                 // if(n<0){
                     
                 // }else if (n==0){
                 //     printf("No udp bytes received\n");
                 // }
-                printf("Receive udp game input packets from client\n");
-                clients.buffer_usr_input[i][n]='\0';
-                for (int i=0; i<clients.socket_descriptor.size(); i++){
-                    if(clients.address[i].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
-                        printf("Processing user input\n");
-                        if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
-                        {
-                            //if client times-out - goes back to start of loop? (maybe case structure)
-                        }
-                    }
-                }
+                // printf("Receive udp game input packets from client\n");
+                // clients.buffer_usr_input[i][n]='\0';
+                // for (int i=0; i<clients.socket_descriptor.size(); i++){
+                //     if(clients.address[i].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
+                //         printf("Processing user input\n");
+                //         if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
+                //         {
+                //             //if client times-out - goes back to start of loop? (maybe case structure)
+                //         }
+                //     }
+                // }
                 // printf("%s\n", inet_ntoa(clients.address[i].sin_addr));
                 //check whether received packet is from clients that are currently in the game
                 //TODO: client_in_game struct - unordered map? <client_address, player number?>
