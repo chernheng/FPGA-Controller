@@ -7,10 +7,13 @@ using namespace std;
 namespace mp {
   vector<vector<char>> map_array;
   int map_height=40;
+  // int map_height=80;
   int map_width=200;
+  // int map_width=160;
 
   int info_screen_height=5;
   int info_screen_width=200;
+  // int info_screen_width=160;
 
   int player_start_x=10;
   int player_start_y=5;

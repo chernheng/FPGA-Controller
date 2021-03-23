@@ -60,6 +60,12 @@ void readmap(std::string mapfile) {
 
 }
 
+void clear_map() {
+  mp::map_stations.clear();
+  mp::teleport_bindings.clear();
+  mp::map_array.clear();
+}
+
 char get_map_char(const int &x, const int &y) {
   if ((x>mp::map_width) || (y>mp::map_height) || (x<0) || (y<0)) {
     return '\0';

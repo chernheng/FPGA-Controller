@@ -48,6 +48,7 @@ bool can_occupy(const int &x, const int &y);
 bool transparent_cell(const int &x, const int &y);
 char get_map_char(const int &x, const int &y);
 void readmap(std::string mapfile);
+void clear_map();
 
 
 
