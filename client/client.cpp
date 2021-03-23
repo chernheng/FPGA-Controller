@@ -10,6 +10,8 @@ int udp_sockfd;
 struct sockaddr_in serv_addr; 
 struct sockaddr_in serv_addr_udp; 
 //char mac_address[18] = {0};
+vector<string> all_player_names;
+struct timeval _time;
 
 
 //function to set up socket connection
@@ -56,10 +58,12 @@ int create_udp_connection_socket(string server_ip){
         printf("socket creation failed"); 
         exit(0); 
     } 
+    _time.tv_sec = 5;
   
     memset(&serv_addr_udp, 0, sizeof(serv_addr_udp)); 
     serv_addr_udp.sin_family = AF_INET; 
     serv_addr_udp.sin_port = htons(PORT); 
+    setsockopt(udp_sockfd, SOL_SOCKET, SO_RCVTIMEO,(struct timeval *)&_time,sizeof(struct timeval));
     // Convert IPv4 and IPv6 addresses from text to binary form 
     if(inet_pton(AF_INET, server_ip.c_str(), &serv_addr_udp.sin_addr)<=0)  
     { 
@@ -271,7 +275,13 @@ char process_game_start(char* buffer_recv_game_start, int buffer_size){
     for (int i = 0; i<4;i++){
         game::stations.emplace_back(x[i],y[i]);
     }
-    // t.newTask(x,y);
+    int total_no_players = pkt_received->total_players;
+    for (int i =0; i< total_no_players;i++){
+        game::players[i].name = "               ";
+        for (int j = 0;j<15;j++){
+            game::players[i].name[j] = pkt_received->all_names[i][j];
+        }
+    }
     return ch;
     
 }
@@ -401,7 +411,7 @@ int main(int argc, char* argv[]){
     while(pkt_type!=GAME_END_PKT){
         //buffer_recv_game = 0; 
         //send game input to server
-        buffer_send_input_size = game_input_packet(&buffer_send_input, mac_address);
+        // buffer_send_input_size = game_input_packet(&buffer_send_input, mac_address);
         // printf("Sending packets on udp\n");
         //send(udp_sockfd , (char *)&buffer_send_input , buffer_send_input_size , 0 ); 
         if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
@@ -429,6 +439,12 @@ int main(int argc, char* argv[]){
         if (pkt_type==GAME_PROCESS_PKT){
             process_game(buffer_recv_game, MAX_COUNT_BYTES, game::players); 
             while(1) {
+                if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
+                printf("Error in sending udp packet\n");
+                cout << strerror(errno) << '\n';
+                endwin();
+                exit(EXIT_FAILURE);
+            }
                 // print_station(ts,map_screen);
                 game::player_index = user_id;
                 game_loop();
@@ -442,10 +458,10 @@ int main(int argc, char* argv[]){
 
                 wrefresh(map_screen);
                 if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
-                    printf("Error in receiving udp packet\n");
-                    endwin();
-                    cout << strerror(errno) << '\n';
-                    exit(EXIT_FAILURE);
+                    // printf("Error in receiving udp packet\n");
+                    // endwin();
+                    // cout << strerror(errno) << '\n';
+                    // exit(EXIT_FAILURE);
                 }
                 pkt_type = process_packet(buffer_recv_game);
                 process_game(buffer_recv_game, MAX_COUNT_BYTES, game::players); 

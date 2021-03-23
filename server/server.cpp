@@ -12,9 +12,11 @@ struct sockaddr_in serv_address;
 int addrlen = sizeof(address);
 clients_info clients;
 vector<string> player_names;
-vector<int> FPGA_index; //how many FPGA and their index on the socket descriptor
+vector<int> FPGA_index; //how many FPGA and their index on the socket descriptor, used to just send to FPGA
+vector<int> client_index; // how many clients and their index, used to just send to client
 std::map<int,std::string> FPGA_mac; // maps FPGA to mac address
 std::map<std::string,int> mac_client;// maps mac address to client index
+char all_names[6][15];
 
 //empty function so makefile doesnt complain
 int create_connection_socket(string server_ip)
@@ -224,19 +226,25 @@ int acknowledgement_packet(client_server_pkt *buffer_send)
     buffer_send_size = sizeof(send_packet);
     return buffer_send_size;
 }
-char no_of_users = 0;
+char user_id = 0;
 
 int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
     send_packet.packet_type = GAME_START_PKT;
-    send_packet.ch = no_of_users;
-    no_of_users++;
+    send_packet.ch = user_id;
+    user_id++;
     for (int i = 0; i< 4;i++){
         send_packet.ts_x[i] = ts.x_stn[i];
         send_packet.ts_y[i] = ts.y_stn[i];
         send_packet.task[i] = ts.task[i];
+    }
+    send_packet.total_players = FPGA_index.size();
+    for (int i = 0; i<FPGA_index.size();i++){
+        for (int j = 0;j<15;j++){
+            send_packet.all_names[i][j] = all_names[i][j];
+        }
     }
 
 
@@ -335,6 +343,7 @@ int process_connection_request(char *buffer_conn_req, int id)
     std::string name;
     for(int i = 0; i<15;i++){
         name[i] = pkt_received->name[i];
+        all_names[id][i] = pkt_received->name[i];
     }
     printf("%s has joined!\n", &(pkt_received->name[0]));
 
@@ -351,6 +360,7 @@ int process_connection_request(char *buffer_conn_req, int id)
     mac_client.insert(pair<std::string,int>(mac_addr,id));
     FPGA_mac.insert(pair<int,std::string>(id,mac_addr));
     FPGA_index.push_back(id);
+    client_index.push_back(id);
     
     if (clients.socket_descriptor.size() < 2)
     {
@@ -639,6 +649,7 @@ int main()
                     
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
+                    
                 }
                 // for (int i = 0; i < clients.socket_descriptor.size(); i++)
                 // {
