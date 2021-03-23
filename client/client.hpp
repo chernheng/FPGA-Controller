@@ -7,6 +7,7 @@
 #include <stdlib.h> 
 #include <netinet/in.h> 
 #include <sys/ioctl.h>
+#include <sys/time.h>
 #include <net/if.h>	//ifreq
 #include <string.h> 
 #include <string>
