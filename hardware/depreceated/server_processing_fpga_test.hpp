@@ -63,9 +63,11 @@ struct client_server_pkt{
 
 struct fpga_server_pkt{
     uint8_t fpga_or_host;
-    int x_coord;
-    int y_coord;
-    int z_coord;
+    char mac_addr[6];
+    int8_t x_coord;
+    int8_t y_coord;
+    int8_t task_complete;
+    // char mac_addr[6];
 };
 
 int create_connection_socket();

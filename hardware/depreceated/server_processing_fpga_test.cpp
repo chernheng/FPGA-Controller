@@ -280,38 +280,6 @@ int process_packet(char *buffer_recv)
     return pkt_type;
 }
 
-int process_packet_header(char *buffer_recv){
-    int pkt_type;
-    // client_server_pkt *pkt_received = (client_server_pkt *)buffer_recv;
-    pkt_type = (buffer_recv[0]);
-    if (pkt_type==1){
-        //fpga packet received
-        printf("Fpga packet received.\n");
-    }else{
-        printf("Host packet received; packet type: %d\n", pkt_type);
-    }
-    return pkt_type;
-}
-
-int process_fpga_coord(char *buffer_recv, int buffer_recv_size){
-    int recv_len = 4;
-    // char recv_data[recv_len] = {0};
-    // int valread = read( new_socket , &recv_data, sizeof(recv_data) );
-    // for(unsigned i=1; i<recv_len; i++){
-    //     buffer_recv[i] = ntohl(buffer_recv[i]);     // Remember to do translation back to host endinanness
-    // }
-    fpga_server_pkt* fpga_pkt_received;// = buffer_recv;
-    buffer_recv[buffer_recv_size]='\0';
-    memcpy(fpga_pkt_received, buffer_recv, buffer_recv_size+1);
-    printf("x-coord: %d\n", fpga_pkt_received->x_coord);
-    printf("y-coord: %d\n",fpga_pkt_received->y_coord);
-    printf("z-coord: %d\n",fpga_pkt_received->z_coord);
-
-    return 1;
-}
-
-
-
 int process_connection_request(char *buffer_conn_req)
 {
     //to check a global map that stores current clients? - if size>=2, then will send ack, else will wait for another player to connect
@@ -397,217 +365,204 @@ int main()
         clients.socket_descriptor.push_back(new_socket);
         clients.buffer_conn_req.push_back(empty_buffer);
 
-        int iBytesReceived;
         //error returns -1
-        if ((iBytesReceived = read(clients.socket_descriptor[0], clients.buffer_conn_req[0], MAX_COUNT_BYTES)) < 0)
+        if ((read(clients.socket_descriptor[0], clients.buffer_conn_req[0], MAX_COUNT_BYTES)) < 0)
         {
             printf("Error in reading received bytes\n");
         }
-        printf("Read bytes received: %d.\n", iBytesReceived);
 
-        // //check if received packet is of connection req type
-        // int pkt_type;
-        // pkt_type = process_packet(clients.buffer_conn_req[0]);
-        // if (pkt_type != CONNECTION_REQ_PKT)
-        // {
-        //     printf("Detected wrong packet response from client.\n");
-        // }
+        //check if received packet is of connection req type
+        int pkt_type;
+        pkt_type = process_packet(clients.buffer_conn_req[0]);
+        if (pkt_type != CONNECTION_REQ_PKT)
+        {
+            printf("Detected wrong packet response from client.\n");
+        }
 
-        //check if packet is of fpga packet
-        int pkt_header_type;
-        pkt_header_type = process_packet_header(clients.buffer_conn_req[0]);
-        if (pkt_header_type==1){
-            //from fpga
-            process_fpga_coord(clients.buffer_conn_req[0], iBytesReceived);
-        }  
-        char *ack_msg = "Received."; 
-        send(new_socket , ack_msg , strlen(ack_msg) , 0 );  // This will be substituted to be the STATE for the player
-        printf("Acknowledge message sent\n");
-    }
-    //     //when there is not enough players - wait for another client's connection
-    //     if (process_connection_request(clients.buffer_conn_req[0]) != 1)
-    //     {
-    //         //int timeout=10;
-    //         printf("Attempting to detect second client\n");
+        //when there is not enough players - wait for another client's connection
+        if (process_connection_request(clients.buffer_conn_req[0]) != 1)
+        {
+            //int timeout=10;
+            printf("Attempting to detect second client\n");
 
-    //         int iResult = AcceptClient(server_fd);
-    //         if (iResult == 0)
-    //         {
-    //             //some error occured with the sockets
-    //         }
-    //     }
+            int iResult = AcceptClient(server_fd);
+            if (iResult == 0)
+            {
+                //some error occured with the sockets
+            }
+        }
 
-    //     //for each client connection:
-    //     for (int i = 1; i < clients.socket_descriptor.size(); i++)
-    //     {
-    //         printf("Processing client number: %d\n", i);
-    //         pkt_type = process_packet(clients.buffer_conn_req[i]);
-    //         if (pkt_type == CONNECTION_REQ_PKT)
-    //         {
-    //             process_connection_request(clients.buffer_conn_req[i]);
-    //         }
-    //         else
-    //         {
-    //             printf("Detected wrong packet response from client.\n");
-    //         }
-    //     }
+        //for each client connection:
+        for (int i = 1; i < clients.socket_descriptor.size(); i++)
+        {
+            printf("Processing client number: %d\n", i);
+            pkt_type = process_packet(clients.buffer_conn_req[i]);
+            if (pkt_type == CONNECTION_REQ_PKT)
+            {
+                process_connection_request(clients.buffer_conn_req[i]);
+            }
+            else
+            {
+                printf("Detected wrong packet response from client.\n");
+            }
+        }
 
-    //     // char buffer_send_ack;
-    //     // int buffer_send_ack_size;
-    //     // char buffer_send_game_start;
-    //     // int buffer_send_game_start_size;
-    //     char buffer_send_game;
-    //     int buffer_send_game_size;
+        // char buffer_send_ack;
+        // int buffer_send_ack_size;
+        // char buffer_send_game_start;
+        // int buffer_send_game_start_size;
+        char buffer_send_game;
+        int buffer_send_game_size;
 
-    //     for (int i = 0; i < clients.socket_descriptor.size(); i++)
-    //     {
-    //         printf("Processing client number: %d\n", i);
-    //         client_server_pkt buffer_send_ack;
-    //         int buffer_send_ack_size;
-    //         // clients.buffer_send_ack.push_back(&buffer_send_ack);
-    //         // clients.buffer_send_ack_size.push_back(buffer_send_ack_size);
+        for (int i = 0; i < clients.socket_descriptor.size(); i++)
+        {
+            printf("Processing client number: %d\n", i);
+            client_server_pkt buffer_send_ack;
+            int buffer_send_ack_size;
+            // clients.buffer_send_ack.push_back(&buffer_send_ack);
+            // clients.buffer_send_ack_size.push_back(buffer_send_ack_size);
 
-    //         buffer_send_ack_size = acknowledgement_packet(&buffer_send_ack);
+            buffer_send_ack_size = acknowledgement_packet(&buffer_send_ack);
 
-    //         //send ack packet to client
-    //         send(clients.socket_descriptor[i], (char *)&buffer_send_ack, buffer_send_ack_size, 0);
-    //         printf("Acknowledge packet sent\n");
-    //     }
-    //     for (int i = 0; i < clients.socket_descriptor.size(); i++)
-    //     {
-    //         //receive play ready packet from client
-    //         //clients.buffer_ready.push_back(empty_buffer);
-    //         char recv_buffer_ready[1024];
-    //         if ((read(clients.socket_descriptor[i], recv_buffer_ready, MAX_COUNT_BYTES)) < 0)
-    //         {
-    //             printf("Error in reading received bytes\n");
-    //         }
+            //send ack packet to client
+            send(clients.socket_descriptor[i], (char *)&buffer_send_ack, buffer_send_ack_size, 0);
+            printf("Acknowledge packet sent\n");
+        }
+        for (int i = 0; i < clients.socket_descriptor.size(); i++)
+        {
+            //receive play ready packet from client
+            //clients.buffer_ready.push_back(empty_buffer);
+            char recv_buffer_ready[1024];
+            if ((read(clients.socket_descriptor[i], recv_buffer_ready, MAX_COUNT_BYTES)) < 0)
+            {
+                printf("Error in reading received bytes\n");
+            }
 
-    //         //TODO: process the packet sent by client - whether client has indicated they are ready before timeout fn
-    //         //else, remove them from the global vector of connected clients
-    //         pkt_type = process_packet(recv_buffer_ready);
-    //         if (pkt_type == PLAYER_READY_PKT)
-    //         {
-    //             if (process_ready(recv_buffer_ready, 1024) != 1)
-    //             {
-    //                 //if client times-out - goes back to start of loop? (maybe case structure)
-    //             }
-    //         }
-    //         else
-    //         {
-    //             printf("Detected wrong packet response from client.\n");
-    //         }
-    //     }
-    //     int sent_pkt_type;
-    //     for (int i = 0; i < clients.socket_descriptor.size(); i++)
-    //     {
-    //         //send game start packet
-    //         //set-up connection game-start coord. and game start display
-    //         client_server_pkt buffer_send_game_start;
-    //         int buffer_send_game_start_size;
-    //         // clients.buffer_send_game_start.push_back(&buffer_send_game_start);
-    //         // clients.buffer_send_game_start_size.push_back(buffer_send_game_start_size);
-    //         buffer_send_game_start_size = game_start_packet(&buffer_send_game_start);
-    //         //send game start coord and display to client
-    //         send(clients.socket_descriptor[i], (char *)&buffer_send_game_start, buffer_send_game_start_size, 0);
-    //         printf("Game start coordinates and game display sent\n");
-    //         sent_pkt_type = process_packet((char *)&buffer_send_game_start);
-    //     }
-    //     // sendto(server_fd, clients.buffer_send_game_start[i], clients.buffer_send_game_start_size[i], MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
-    //     //         len);
+            //TODO: process the packet sent by client - whether client has indicated they are ready before timeout fn
+            //else, remove them from the global vector of connected clients
+            pkt_type = process_packet(recv_buffer_ready);
+            if (pkt_type == PLAYER_READY_PKT)
+            {
+                if (process_ready(recv_buffer_ready, 1024) != 1)
+                {
+                    //if client times-out - goes back to start of loop? (maybe case structure)
+                }
+            }
+            else
+            {
+                printf("Detected wrong packet response from client.\n");
+            }
+        }
+        int sent_pkt_type;
+        for (int i = 0; i < clients.socket_descriptor.size(); i++)
+        {
+            //send game start packet
+            //set-up connection game-start coord. and game start display
+            client_server_pkt buffer_send_game_start;
+            int buffer_send_game_start_size;
+            // clients.buffer_send_game_start.push_back(&buffer_send_game_start);
+            // clients.buffer_send_game_start_size.push_back(buffer_send_game_start_size);
+            buffer_send_game_start_size = game_start_packet(&buffer_send_game_start);
+            //send game start coord and display to client
+            send(clients.socket_descriptor[i], (char *)&buffer_send_game_start, buffer_send_game_start_size, 0);
+            printf("Game start coordinates and game display sent\n");
+            sent_pkt_type = process_packet((char *)&buffer_send_game_start);
+        }
+        // sendto(server_fd, clients.buffer_send_game_start[i], clients.buffer_send_game_start_size[i], MSG_CONFIRM, (const struct sockaddr *) &cliaddr,
+        //         len);
 
         
 
 
-    //     struct sockaddr_in cliaddr; 
-    //     memset(&cliaddr, 0, sizeof(cliaddr)); 
-    //     socklen_t len = sizeof(cliaddr);
-    //     vector<sockaddr_in> vec_cliaddr;
-    //     vector<socklen_t> vec_cliaddr_len;
+        struct sockaddr_in cliaddr; 
+        memset(&cliaddr, 0, sizeof(cliaddr)); 
+        socklen_t len = sizeof(cliaddr);
+        vector<sockaddr_in> vec_cliaddr;
+        vector<socklen_t> vec_cliaddr_len;
 
-    //     while (sent_pkt_type != GAME_END_PKT)
-    //     {
-    //         for (int i = 0; i < clients.socket_descriptor.size(); i++)
-    //         {
-    //             clients.buffer_usr_input.push_back(empty_buffer);
-    //             // if ((read(clients.socket_descriptor[i], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0)
-    //             // {
-    //             //     printf("Error in reading received bytes\n");
-    //             // }
-    //             printf("Attempting to receive udp game input packets from client...\n");
-    //             int n;
-    //             vec_cliaddr.push_back(cliaddr);
-    //             vec_cliaddr_len.push_back(sizeof(cliaddr));
-    //             if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[i], &vec_cliaddr_len[i])<0){
-    //                 printf("Error in udp bytes received\n");
-    //             }
-    //             //clients.buffer_usr_input[i][n] = '\0';
-    //             // if(n<0){
+        while (sent_pkt_type != GAME_END_PKT)
+        {
+            for (int i = 0; i < clients.socket_descriptor.size(); i++)
+            {
+                clients.buffer_usr_input.push_back(empty_buffer);
+                // if ((read(clients.socket_descriptor[i], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0)
+                // {
+                //     printf("Error in reading received bytes\n");
+                // }
+                printf("Attempting to receive udp game input packets from client...\n");
+                int n;
+                vec_cliaddr.push_back(cliaddr);
+                vec_cliaddr_len.push_back(sizeof(cliaddr));
+                if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[i], &vec_cliaddr_len[i])<0){
+                    printf("Error in udp bytes received\n");
+                }
+                //clients.buffer_usr_input[i][n] = '\0';
+                // if(n<0){
                     
-    //             // }else if (n==0){
-    //             //     printf("No udp bytes received\n");
-    //             // }
-    //             printf("Receive udp game input packets from client\n");
-    //             clients.buffer_usr_input[i][n]='\0';
-    //             for (int i=0; i<clients.socket_descriptor.size(); i++){
-    //                 if(clients.address[i].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
-    //                     printf("Processing user input\n");
-    //                     if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
-    //                     {
-    //                         //if client times-out - goes back to start of loop? (maybe case structure)
-    //                     }
-    //                 }
-    //             }
-    //             // printf("%s\n", inet_ntoa(clients.address[i].sin_addr));
-    //             //check whether received packet is from clients that are currently in the game
-    //             //TODO: client_in_game struct - unordered map? <client_address, player number?>
-    //             // int is_in_game = 0;
-    //             // for(int i=0; i<clients_in_game.size(); i++){
-    //             //     if(clients_in_game[i].sin_addr.s_addr==address.sin_addr.s_addr){
-    //             //         is_in_game = 1;
-    //             //     }
-    //             // }
-    //             // if (is_in_game==0){
-    //             //     //client is not in game - send reject msg back to client
-    //             //     char* buffer_send_reject;
-    //             //     int buffer_send_reject_size;
-    //             //     buffer_send_reject_size = reject_packet((client_server_pkt*)&buffer_send_reject);
-    //             //     send(new_socket, (char*)&buffer_send_reject , buffer_send_reject_size , 0 );
+                // }else if (n==0){
+                //     printf("No udp bytes received\n");
+                // }
+                printf("Receive udp game input packets from client\n");
+                clients.buffer_usr_input[i][n]='\0';
+                for (int i=0; i<clients.socket_descriptor.size(); i++){
+                    if(clients.address[i].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
+                        printf("Processing user input\n");
+                        if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
+                        {
+                            //if client times-out - goes back to start of loop? (maybe case structure)
+                        }
+                    }
+                }
+                // printf("%s\n", inet_ntoa(clients.address[i].sin_addr));
+                //check whether received packet is from clients that are currently in the game
+                //TODO: client_in_game struct - unordered map? <client_address, player number?>
+                // int is_in_game = 0;
+                // for(int i=0; i<clients_in_game.size(); i++){
+                //     if(clients_in_game[i].sin_addr.s_addr==address.sin_addr.s_addr){
+                //         is_in_game = 1;
+                //     }
+                // }
+                // if (is_in_game==0){
+                //     //client is not in game - send reject msg back to client
+                //     char* buffer_send_reject;
+                //     int buffer_send_reject_size;
+                //     buffer_send_reject_size = reject_packet((client_server_pkt*)&buffer_send_reject);
+                //     send(new_socket, (char*)&buffer_send_reject , buffer_send_reject_size , 0 );
 
-    //             // }
+                // }
 
-    //             // if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
-    //             // {
-    //             //     //if client times-out - goes back to start of loop? (maybe case structure)
-    //             // }
-    //         }
-    //         for (int i = 0; i < clients.socket_descriptor.size(); i++)
-    //         {
-    //             //sends game display during game
-    //             client_server_pkt buffer_send_game;
-    //             int buffer_send_game_size;
-    //             //clients.buffer_send_game.push_back(&buffer_send_game);
-    //             //clients.buffer_send_game_size.push_back(buffer_send_game_size);
-    //             buffer_send_game_size = game_process_packet(&buffer_send_game);
-    //             //send game in process corrd and display to client
-    //             //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
-    //             if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
-    //                 perror("sending udp bytes failed"); 
-    //                 exit(EXIT_FAILURE); 
-    //                 //printf("Error in udp bytes sent\n");
-    //             }
+                // if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
+                // {
+                //     //if client times-out - goes back to start of loop? (maybe case structure)
+                // }
+            }
+            for (int i = 0; i < clients.socket_descriptor.size(); i++)
+            {
+                //sends game display during game
+                client_server_pkt buffer_send_game;
+                int buffer_send_game_size;
+                //clients.buffer_send_game.push_back(&buffer_send_game);
+                //clients.buffer_send_game_size.push_back(buffer_send_game_size);
+                buffer_send_game_size = game_process_packet(&buffer_send_game);
+                //send game in process corrd and display to client
+                //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
+                if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[i], vec_cliaddr_len[i])<0){
+                    perror("sending udp bytes failed"); 
+                    exit(EXIT_FAILURE); 
+                    //printf("Error in udp bytes sent\n");
+                }
                 
-    //             sent_pkt_type = process_packet((char *)&buffer_send_game);
-    //             printf("loop number: %d\n", i);
-    //         }
-    //     }
+                sent_pkt_type = process_packet((char *)&buffer_send_game);
+                printf("loop number: %d\n", i);
+            }
+        }
 
-    //     for (int i = 0; i < clients.socket_descriptor.size(); i++)
-    //     {
-    //         close(clients.socket_descriptor[i]);
-    //     }
+        for (int i = 0; i < clients.socket_descriptor.size(); i++)
+        {
+            close(clients.socket_descriptor[i]);
+        }
 
-	// clients = {};
-    // game_loop=0;
-    // }
+	clients = {};
+    game_loop=0;
+    }
 }

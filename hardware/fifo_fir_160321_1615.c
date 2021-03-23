@@ -225,7 +225,7 @@ int main()
             return 1;
         }
 
-		alt_u32 send_arr[4] = {
+		alt_u8 send_arr[4] = {
             xy_dir[0],  // x dir {-4,4}
             xy_dir[1],  // y dir {-4,4}
             nios_to_host_event, // enum 0-??
@@ -682,10 +682,10 @@ int random_number_task(){
 
     // Generate random numbers
     int random_value = rng();
-    //-(random_value + 1);   
+    //-(random_value + 1);
 
 
-    int d1=0,d2=0;      
+    int d1=0,d2=0;
     while(random_value>=0){
     	d2++; random_value -= 16;
     	if(d2==10){d2=0; d1++;}
@@ -698,7 +698,7 @@ int random_number_task(){
     int switch_datain;
 
     IOWR_ALTERA_AVALON_PIO_DATA(HEX1_BASE, seg1);
-    IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg2);   
+    IOWR_ALTERA_AVALON_PIO_DATA(HEX0_BASE, seg2);
 
 
     while(1){
