@@ -12,6 +12,7 @@ struct sockaddr_in serv_addr_udp;
 //char mac_address[18] = {0};
 vector<string> all_player_names;
 struct timeval _time;
+int total_no_players;
 
 
 //function to set up socket connection
@@ -276,9 +277,10 @@ char process_game_start(char* buffer_recv_game_start, int buffer_size){
     for (int i = 0; i<4;i++){
         game::stations.emplace_back(x[i],y[i]);
     }
-    int total_no_players = pkt_received->total_players;
+    total_no_players = pkt_received->total_players;
     for (int i =0; i< total_no_players;i++){
         game::players[i].name = "               ";
+        game::players[i].is_used = true;
         for (int j = 0;j<15;j++){
             game::players[i].name[j] = pkt_received->all_names[i][j];
         }
@@ -434,7 +436,6 @@ int main(int argc, char* argv[]){
             exit(EXIT_FAILURE);
         }
         // printf("Received udp packets from server\n");
-        game::players[1].is_used = true;
         init_info_panel();
         copy_stations_to_map();
         pkt_type = process_packet(buffer_recv_game);

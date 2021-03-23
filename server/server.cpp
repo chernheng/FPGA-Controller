@@ -240,8 +240,8 @@ int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
         send_packet.ts_y[i] = ts.y_stn[i];
         send_packet.task[i] = ts.task[i];
     }
-    send_packet.total_players = FPGA_index.size();
-    for (int i = 0; i<FPGA_index.size();i++){
+    send_packet.total_players = client_index.size();
+    for (int i = 0; i<client_index.size();i++){
         for (int j = 0;j<15;j++){
             send_packet.all_names[i][j] = all_names[i][j];
         }
@@ -284,7 +284,7 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id,
             break;
         }
     }
-    for (int i =0;i<2;i++){
+    for (int i =0;i<client_index.size();i++){
         send_packet.x_coord[i] = players[i].x_coord;
         send_packet.y_coord[i] = players[i].y_coord;
     }
@@ -561,17 +561,17 @@ int main()
         for (int i = 1; i < clients.socket_descriptor.size(); i++)
         {
             printf("Processing client number: %d\n", i);
-            pkt_header_type = process_packet_header(clients.buffer_conn_req[0]);
+            pkt_header_type = process_packet_header(clients.buffer_conn_req[i]);
             if (pkt_header_type == 0){
             //when there is not enough players - wait for another client's connection
-                if (process_connection_request_client(clients.buffer_conn_req[0], i) != 1)
+                if (process_connection_request_client(clients.buffer_conn_req[i], i) != 1)
                 {
                     //int timeout=10;
                     printf("connection req failed\n");
                 }
             } else if (pkt_header_type == 1) {
                 fpga_server_pkt fpga_pkt;
-                int process = process_fpga_coord(clients.buffer_conn_req[0], &fpga_pkt);
+                int process = process_fpga_coord(clients.buffer_conn_req[i], &fpga_pkt);
                 if (process_connection_request_fpga(i, &fpga_pkt) != 1)
                 {
                     //int timeout=10;
@@ -627,12 +627,12 @@ int main()
             }
         }
         readmap("maps/map1.txt");
-        TaskStation ts[2];
-        for (int i = 0; i<2;i++){
+        TaskStation ts[client_index.size()];
+        for (int i = 0; i<client_index.size();i++){
             ts[i] = TaskStation(i);
         }
         int sent_pkt_type;
-        for (int i = 0; i < clients.socket_descriptor.size(); i++)
+        for (int i = 0; i < client_index.size(); i++)
         {
             //send game start packet
             //set-up connection game-start coord. and game start display
@@ -658,8 +658,8 @@ int main()
         vector<sockaddr_in> vec_cliaddr;
         vector<socklen_t> vec_cliaddr_len;
 
-        player players[2];
-        for (int i = 0; i<2;i++){
+        player players[client_index.size()];
+        for (int i = 0; i<client_index.size();i++){
             players[i] = player();
         }
 
