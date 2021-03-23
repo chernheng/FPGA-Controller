@@ -439,7 +439,7 @@ int main(int argc, char* argv[]){
                 cout << strerror(errno) << '\n';
                 endwin();
                 exit(EXIT_FAILURE);
-        }
+            }
                 // print_station(ts,map_screen);
                 game::player_index = user_id;
                 game_loop();
