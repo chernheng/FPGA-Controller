@@ -617,7 +617,7 @@ int main()
                 //     //if client times-out - goes back to start of loop? (maybe case structure)
                 // }
             }
-            while(1){
+            // while(1){
                 for (int i = 0; i < FPGA_index.size(); i++)
                 {
                     vector<int> x = ts[i].x_stn;
@@ -649,12 +649,13 @@ int main()
                     
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
+                    
                 }
                 // for (int i = 0; i < clients.socket_descriptor.size(); i++)
                 // {
                 // }
             }
-        }
+        // }
 
         for (int i = 0; i < clients.socket_descriptor.size(); i++)
         {
