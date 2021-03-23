@@ -293,7 +293,7 @@ void process_game(char* buffer_recv_game, int buffer_size, player *players){
     client_server_pkt* pkt_received = (client_server_pkt*)buffer_recv_game;
     int *x_loc = pkt_received->x_coord;
     int *y_loc = pkt_received->y_coord;
-    for(int i = 0 ; i<2;i++){
+    for(int i = 0 ; i<total_no_players;i++){
         players[i].newCoord(x_loc[i],y_loc[i]);
     }
 }
