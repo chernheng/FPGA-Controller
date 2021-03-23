@@ -10,6 +10,7 @@ int udp_sockfd;
 struct sockaddr_in serv_addr; 
 struct sockaddr_in serv_addr_udp; 
 //char mac_address[18] = {0};
+vector<string> all_player_names;
 
 
 //function to set up socket connection
@@ -271,7 +272,13 @@ char process_game_start(char* buffer_recv_game_start, int buffer_size){
     for (int i = 0; i<4;i++){
         game::stations.emplace_back(x[i],y[i]);
     }
-    // t.newTask(x,y);
+    int total_no_players = pkt_received->total_players;
+    for (int i =0; i< total_no_players;i++){
+        game::players[i].name = "               ";
+        for (int j = 0;j<15;j++){
+            game::players[i].name[j] = pkt_received->all_names[i][j];
+        }
+    }
     return ch;
     
 }

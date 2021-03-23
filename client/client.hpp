@@ -44,6 +44,8 @@ struct client_server_pkt{
     int task[4];
     int x_coord[2];
     int y_coord[2];
+    char all_names[6][15];
+    int total_players;
     //TODO: add on what is needed
 };
 
