@@ -17,7 +17,7 @@
 
 
 /* ####### VARIABLE DEFINITIONS ####### */
-#define DEBUG 1					// set to 0 for comms with host PC
+//#define DEBUG 1					// set to 0 for comms with host PC
 #define SEND_TO_PC 1
 
 #define TX_RATE 2				// in hertz, to host PC
@@ -183,7 +183,11 @@ int main()
 
 	// ## END INIT CODE ## //
 	/* Event loop never exits. */
+//	alt_printf("{%x %x %x}", 1, 99, 99);
+
 	while (1){
+
+
 		char get_char[1] = { alt_getchar() };
 		alt_u8 nios_event = atoi( get_char );
 

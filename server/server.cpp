@@ -577,6 +577,9 @@ int main()
                     //int timeout=10;
                     printf("connection req failed\n");
                 }
+                char sendchar = '0';
+                printf("Sending char to fpga\n");
+                send(clients.socket_descriptor[i], &sendchar, sizeof(sendchar), 0);                
             }
         }
 

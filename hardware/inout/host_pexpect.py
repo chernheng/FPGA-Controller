@@ -22,8 +22,14 @@ print(">> Starting subprocess. Enter 'q' on prompt to exit.")
 c = pexpect.popen_spawn.PopenSpawn(inputCmd, encoding='utf-8') # with Windows compatibility
 print(">> Ready!")
 
+flag = False
+
 while True:
-    send_data = input(">> Send to subproc:")
+    if flag:
+        send_data = input(">> Send to subproc:")
+    else:
+        flag = True
+        send_data = '1'
     if send_data == 'q':
         break
     elif len(send_data) != 1:
