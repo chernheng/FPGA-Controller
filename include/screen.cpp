@@ -20,7 +20,7 @@ void start_ncurses() {
   getmaxyx(stdscr, maxy, maxx);
   if ((maxx < mp::map_width) || (maxy < mp::map_height+mp::info_screen_height)) {
     std::string msg = "Your window is too small! (" + std::to_string(maxx) + " x " + std::to_string(maxy) + "). Needs to be at least (" + \
-      std::to_string(mp::map_width) + " x " + std::to_string(mp::map_height) + "). Press any key to exit";
+      std::to_string(mp::map_width) + " x " + std::to_string(mp::map_height+mp::info_screen_height) + "). Press any key to exit";
     printw(msg.c_str());
     getch();
     endwin();
