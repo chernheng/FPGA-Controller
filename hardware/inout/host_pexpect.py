@@ -3,10 +3,10 @@ from pexpect import popen_spawn
 # import subprocess
 import platform
 import sys
-
+# print(platform.uname())
 # Working example of interacting interactively with a subprocess.
 on_windows = "windows" in platform.uname()[0].lower()
-on_wsl = "microsoft" in platform.uname()[3].lower()
+on_wsl = ("microsoft" in platform.uname()[2].lower()) or ("microsoft" in platform.uname()[3].lower())
 
 if on_windows :
     print(">> On Windows.")
@@ -37,7 +37,7 @@ while True:
         continue
     x = c.send(send_data)
     print(">> Sent", send_data, "with", x, "bytes to fgpa.")
-    index = c.expect(['{', pexpect.TIMEOUT], timeout=5)
+    index = c.expect(['{', pexpect.TIMEOUT], timeout=15)
     if index!=0:
         print("Timeout condition reached. Breaking")
         break
