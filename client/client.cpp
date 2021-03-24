@@ -296,6 +296,7 @@ void process_game(char* buffer_recv_game, int buffer_size, player *players){
     for(int i = 0 ; i<total_no_players;i++){
         players[i].newCoord(x_loc[i],y_loc[i]);
     }
+    game::current_task = pkt_received->task_number;
 }
 
 

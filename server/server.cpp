@@ -259,31 +259,33 @@ int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
 }
 
 
-int game_process_packet(client_server_pkt *buffer_send, player *players, int id, bool move, int8_t x_value, int8_t y_value)
+int game_process_packet(client_server_pkt *buffer_send, player *players, int id, bool move, int8_t x_value, int8_t y_value, int task)
 {
     int buffer_send_size = 0;
     client_server_pkt send_packet;
     send_packet.packet_type = GAME_PROCESS_PKT;
+    send_packet.task_number = 1;
 
 
     //to set-up packet_fields
     if (move){
-        while (x_value || y_value) {
+        // while (x_value || y_value) {
             if (x_value <0){
                 players[id].move(RT_DIR, 1);
-                x_value++;
+                // x_value++;
             } else if(x_value>0){
                 players[id].move(LF_DIR, 1);
-                x_value--;
+                // x_value--;
             }
             if (y_value <0){
                 players[id].move(UP_DIR, 1);
-                y_value++;
+                // y_value++;
             } else if(y_value>0){
                 players[id].move(DN_DIR, 1);
-                y_value--;
+                // y_value--;
             }
-        }
+        // }
+        send_packet.task_number = task;
     }
     for (int i =0;i<client_index.size();i++){
         send_packet.x_coord[i] = players[i].x_coord;
@@ -766,6 +768,7 @@ int main()
                     int8_t x_value;
                     int8_t y_value;
                     int8_t task_complete;
+                    int task;
 
 
                     if(move){
@@ -785,7 +788,7 @@ int main()
                         y_value = fpga_pkt.y_coord;
                     }else if(move ==false) {
                         int index =(it_x - ts[i].x_stn.begin());
-                        int task = ts[i].task[index];
+                        task = ts[i].task[index];
                         task = task+2;
                         char ta[2];
                         sprintf(ta,"%d",task);
@@ -816,7 +819,7 @@ int main()
 
                     //clients.buffer_send_game.push_back(&buffer_send_game);
                     //clients.buffer_send_game_size.push_back(buffer_send_game_size);
-                    buffer_send_game_size = game_process_packet(&buffer_send_game, players, i,move, x_value, y_value);
+                    buffer_send_game_size = game_process_packet(&buffer_send_game, players, i,move, x_value, y_value, task);
                     //send game in process corrd and display to client
                     //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
                     

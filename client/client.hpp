@@ -40,6 +40,7 @@ struct client_server_pkt{
     uint8_t packet_type;
     char name[15];
     char ch;
+    int task_number;
     int ts_x[4];
     int ts_y[4];
     int task[4];
