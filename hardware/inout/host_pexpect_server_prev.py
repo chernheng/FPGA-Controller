@@ -17,7 +17,7 @@ sock.connect(('52.77.216.211', port))
 #00:0c:29:8e:fd:82
 
 on_windows = "windows" in platform.uname()[0].lower()
-on_wsl = "microsoft" in platform.uname()[3].lower()
+on_wsl = "microsoft" in platform.uname()[2].lower()
 
 if on_windows :
     print(">> On Windows.")
@@ -46,17 +46,17 @@ j=0
 k=0
 
 #Comment out this code if using native linux
-mac_addr_input = input ("Enter mac address :")
-mac_addr = binascii.unhexlify(mac_addr_input.replace(':', ''))
-print("mac address in bytes :", mac_addr)
+# mac_addr_input = input ("Enter mac address :")
+# mac_addr = binascii.unhexlify(mac_addr_input.replace(':', ''))
+# print("mac address in bytes :", mac_addr)
 #
 
 pkt_header = np.int8(1)
 mac_int = uuid.getnode()
 
 #Comment out this code if using WSL 1
-#mac_addr = bytearray(mac_int.to_bytes(6, "big"))
-#print(">> Mac addr: ", mac_addr)
+mac_addr = bytearray(mac_int.to_bytes(6, "big"))
+print(">> Mac addr: ", mac_addr)
 #
 data_send = [i, j, k]
 data_bytes = bytearray()

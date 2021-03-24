@@ -41,7 +41,8 @@ void readmap(std::string mapfile) {
         }
         break;
       case 'S':
-        mp::map_stations.emplace_back(j, i);
+        d = mapin.get() - '0';
+        mp::map_stations.emplace_back(j, i, d);
         break;
       
       }
