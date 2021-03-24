@@ -137,7 +137,6 @@ int AcceptClient(int server_socket)
     int sd;
     int iResult;
     int client_number = 1;
-    char empty_buffer[MAX_COUNT_BYTES] = {0};
     int retVal = 0;
 
     while (1)
@@ -207,7 +206,7 @@ int AcceptClient(int server_socket)
         printf("Finished reading into buffer\n");
         retVal = 1;
         //until server detects max number of clients/players
-        if (client_number == 6)
+        if (client_number == 10)
         {
             break;
         }
