@@ -7,11 +7,13 @@ import socket
 import struct      
 import numpy as np
 import re, uuid
+import binascii
+
 
 # Create a socket object (on local host)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 8080
-sock.connect(('192.168.38.147', port))
+sock.connect(('52.77.216.211', port))
 
 on_windows = "windows" in platform.uname()[0].lower()
 on_wsl = "microsoft" in platform.uname()[3].lower()
@@ -42,12 +44,25 @@ i=0
 j=0
 k=0
 
+#Comment out this code if using native linux
+mac_addr_input = input ("Enter mac address :")
+mac_addr = binascii.unhexlify(mac_addr_input.replace(':', ''))
+print("mac address in bytes :", mac_addr)
+#
+#00:0c:29:8e:fd:82
+
+
+
+pause = 0
+
 while True:
     pkt_header = np.int8(1)
     mac_int = uuid.getnode()
-    mac_addr = bytearray(mac_int.to_bytes(6, "big"))
-    print(">> Mac addr: ", mac_addr)
 
+    #Comment out this code if using WSL 1
+    #mac_addr = bytearray(mac_int.to_bytes(6, "big"))
+    #print(">> Mac addr: ", mac_addr)
+    #
     data_send = [i, j, k]
     data_bytes = bytearray()
     data_bytes += pkt_header.tobytes()
@@ -72,12 +87,16 @@ while True:
         sock.send(err_bytes)   # send [99,99,99] (error code) to server
         continue
 
-    x = c.send(send_data)
-    print(">> Sent", send_data, "with", x, "bytes to fgpa.")
+    #send to fpga only if not at task station
+    if pause==0:
+        x = c.send(send_data)
+        print(">> Sent", send_data, "with", x, "bytes to fgpa.")
 
-    index = c.expect(['{', pexpect.TIMEOUT], timeout=1)
+    
+
+    index = c.expect(['{', pexpect.TIMEOUT], timeout=20)
     if index==0:
-        print("Timeout condition reached. Breaking")
+        #print("Timeout condition reached. Breaking")
     
         c.expect(" ")
         i = int(c.before, base=16)
@@ -86,11 +105,13 @@ while True:
         c.expect("}")   # Now with line endings
         k = int(c.before, base=16)
         print(">> Obtained:", "i:", i, "j:", j, "k:", k)
+        pause = 0
     else:
         i=0
         j=0
         k=0
         print(">> Sending data so server won't fomo")
+        pause = 1
 
     # pkt_header = np.int8(1)
     # mac_int = uuid.getnode()
