@@ -745,13 +745,13 @@ int main()
             while(1){
                 for (int i = 0; i < client_index.size(); i++)
                 {
-                    vector<int> x = ts[i].x_stn;
-                    vector<int> y = ts[i].y_stn;
+                    // vector<int> x = ts[i].x_stn;
+                    // vector<int> y = ts[i].y_stn;
                     bool move = true;
                     //sends game display during game
-                    vector<int>::iterator it_x = find(x.begin(),x.end(),players[i].x_coord);
-                    vector<int>::iterator it_y = find(y.begin(),y.end(),players[i].y_coord);
-                    if ((it_x - x.begin()) == (it_y - y.begin()) && it_x!=x.end() && it_y!=y.end()) {
+                    vector<int>::iterator it_x = find(ts[i].x_stn.begin(),ts[i].x_stn.end(),players[i].x_coord);
+                    vector<int>::iterator it_y = find(ts[i].y_stn.begin(),ts[i].y_stn.end(),players[i].y_coord);
+                    if ((it_x - ts[i].x_stn.begin()) == (it_y - ts[i].y_stn.begin()) && it_x!=ts[i].x_stn.end() && it_y!=ts[i].y_stn.end()) {
                         move = false;
                     }
                     std::map<int,std::string>::iterator client_it;
@@ -759,22 +759,54 @@ int main()
                     client_it = client_mac.find(client_index[i]);
                     FPGA_it = mac_FPGA.find(client_it->second);
                     printf("FPGA_index: %d\n",FPGA_it->second);
-
-                    char sendchar = '1';
-                    printf("Sending char to fpga\n");
-                    send(clients.socket_descriptor[FPGA_it->second], &sendchar, sizeof(sendchar), 0);
-
-                    char recv_data[MAX_COUNT_BYTES] = {0};
-                    int iBytesReceived;
-                    //error returns -1
-                    if ((iBytesReceived = read(clients.socket_descriptor[FPGA_it->second], recv_data, MAX_COUNT_BYTES)) < 0)
-                    {
-                        printf("Error in reading received bytes\n");
-                    }
                     fpga_server_pkt fpga_pkt;
-                    int process = process_fpga_coord(recv_data, &fpga_pkt);
-                    int8_t x_value = fpga_pkt.x_coord;
-                    int8_t y_value = fpga_pkt.y_coord;
+                    int8_t x_value;
+                    int8_t y_value;
+                    int8_t task_complete;
+
+
+                    if(move){
+                        char sendchar = '1';
+                        printf("Sending char to fpga\n");
+                        send(clients.socket_descriptor[FPGA_it->second], &sendchar, sizeof(sendchar), 0);
+
+                        char recv_data[MAX_COUNT_BYTES] = {0};
+                        int iBytesReceived;
+                        //error returns -1
+                        if ((iBytesReceived = read(clients.socket_descriptor[FPGA_it->second], recv_data, MAX_COUNT_BYTES)) < 0)
+                        {
+                            printf("Error in reading received bytes\n");
+                        }
+                        int process = process_fpga_coord(recv_data, &fpga_pkt);
+                        x_value = fpga_pkt.x_coord;
+                        y_value = fpga_pkt.y_coord;
+                    }else if(move ==false) {
+                        int index =(it_x - ts[i].x_stn.begin());
+                        int task = ts[i].task[index];
+                        task = task+2;
+                        char ta[2];
+                        sprintf(ta,"%d",task);
+                        char sendchar = ta[0];
+                        printf("Sending char to fpga\n");
+                        send(clients.socket_descriptor[FPGA_it->second], &sendchar, sizeof(sendchar), 0);
+
+                        char recv_data[MAX_COUNT_BYTES] = {0};
+                        int iBytesReceived;
+                        //error returns -1
+                        if ((iBytesReceived = read(clients.socket_descriptor[FPGA_it->second], recv_data, MAX_COUNT_BYTES)) < 0)
+                        {
+                            printf("Error in reading received bytes\n");
+                        }
+                        int process = process_fpga_coord(recv_data, &fpga_pkt);
+                        x_value = fpga_pkt.x_coord;
+                        y_value = fpga_pkt.y_coord;
+                        task_complete = fpga_pkt.task_complete;
+                        if(task_complete = 1){
+                            ts[i].x_stn.erase(it_x);
+                            ts[i].y_stn.erase(it_y);
+                            ts[i].task.erase(ts[i].task.begin()+index);
+                        }
+                    }
 
                     client_server_pkt buffer_send_game;
                     int buffer_send_game_size;
