@@ -14,9 +14,10 @@ import binascii
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 8080
 sock.connect(('52.77.216.211', port))
+#00:0c:29:8e:fd:82
 
 on_windows = "windows" in platform.uname()[0].lower()
-on_wsl = ("microsoft" in platform.uname()[2].lower()) or ("microsoft" in platform.uname()[3].lower())
+on_wsl = "microsoft" in platform.uname()[3].lower()
 
 if on_windows :
     print(">> On Windows.")
@@ -49,8 +50,52 @@ mac_addr_input = input ("Enter mac address :")
 mac_addr = binascii.unhexlify(mac_addr_input.replace(':', ''))
 print("mac address in bytes :", mac_addr)
 #
-#00:0c:29:8e:fd:82
 
+pkt_header = np.int8(1)
+mac_int = uuid.getnode()
+
+#Comment out this code if using WSL 1
+#mac_addr = bytearray(mac_int.to_bytes(6, "big"))
+#print(">> Mac addr: ", mac_addr)
+#
+data_send = [i, j, k]
+data_bytes = bytearray()
+data_bytes += pkt_header.tobytes()
+# data_bytes += mac_addr
+data_bytes += mac_addr
+for data_packet in data_send:
+    data_packet = bytearray( data_packet.to_bytes(1, "big") )   # Network byte-order is big-endian, so we specify this.
+    data_bytes += data_packet
+
+sock.send(data_bytes)
+print(">> Sent", data_bytes, "to server")
+
+##
+dataFromServer = sock.recv(1024)    # Receive data from server
+send_data = dataFromServer.decode()
+print(">> Got", send_data, "from server.")
+
+
+#send to fpga only if not at task station
+x = c.send(send_data)
+print(">> Sent", send_data, "with", x, "bytes to fgpa.")
+
+
+
+index = c.expect(['{', pexpect.TIMEOUT], timeout=20)
+if index==0:
+    #print("Timeout condition reached. Breaking")
+
+    c.expect(" ")
+    i = int(c.before, base=16)
+    c.expect(" ")
+    j = int(c.before, base=16)
+    c.expect("}")   # Now with line endings
+    k = int(c.before, base=16)
+    print(">> Obtained:", "i:", i, "j:", j, "k:", k)
+    pause = 0
+
+###
 
 
 pause = 0
@@ -94,7 +139,7 @@ while True:
 
     
 
-    index = c.expect(['{', pexpect.TIMEOUT], timeout=20)
+    index = c.expect(['{', pexpect.TIMEOUT], timeout=0.001)
     if index==0:
         #print("Timeout condition reached. Breaking")
     
