@@ -14,20 +14,18 @@ import binascii
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 8080
 sock.connect(('52.77.216.211', port))
-# print(platform.uname())
+#00:0c:29:8e:fd:82
+
 on_windows = "windows" in platform.uname()[0].lower()
-on_wsl1 = "Microsoft" in platform.uname()[2]
-on_wsl2 = "microsoft" in platform.uname()[2]
-on_linux = False
+on_wsl = "microsoft" in platform.uname()[3].lower()
 
 if on_windows :
     print(">> On Windows.")
-elif (on_wsl2):
+    inputCmd = "C:\\intelFPGA_lite\\20.1\\quartus\\bin64\\nios2-terminal.exe --quiet --no-quit-on-ctrl-d"
+elif on_wsl:
     print(">> On WSL.")
     inputCmd = '/bin/bash -c "/mnt/c/intelFPGA_lite/20.1/quartus/bin64/nios2-terminal.exe --quiet --no-quit-on-ctrl-d"'
-    on_linux = True
 else:
-    on_linux = True
     print(">> On Linux.")
     inputCmd = '/bin/bash -c "/home/e2/intelFPGA_lite/20.1/quartus/bin/nios2-terminal --quiet --no-quit-on-ctrl-d"'
 
@@ -48,18 +46,17 @@ j=0
 k=0
 
 #Comment out this code if using native linux
-if on_wsl1:
-  mac_addr_input = input ("Enter mac address :")
-  mac_addr = binascii.unhexlify(mac_addr_input.replace(':', ''))
-  print("mac address in bytes :", mac_addr)
+mac_addr_input = input ("Enter mac address :")
+mac_addr = binascii.unhexlify(mac_addr_input.replace(':', ''))
+print("mac address in bytes :", mac_addr)
 #
 
 pkt_header = np.int8(1)
 mac_int = uuid.getnode()
 
-if not on_wsl1:
-  mac_addr = bytearray(mac_int.to_bytes(6, "big"))
-  print(">> Mac addr: ", mac_addr)
+#Comment out this code if using WSL 1
+#mac_addr = bytearray(mac_int.to_bytes(6, "big"))
+#print(">> Mac addr: ", mac_addr)
 #
 data_send = [i, j, k]
 data_bytes = bytearray()
@@ -107,9 +104,9 @@ while True:
     pkt_header = np.int8(1)
     mac_int = uuid.getnode()
 
-    # if not on_wsl1:
-    mac_addr = bytearray(mac_int.to_bytes(6, "big"))
-    print(">> Mac addr: ", mac_addr)
+    #Comment out this code if using WSL 1
+    #mac_addr = bytearray(mac_int.to_bytes(6, "big"))
+    #print(">> Mac addr: ", mac_addr)
     #
     data_send = [i, j, k]
     data_bytes = bytearray()
@@ -142,7 +139,7 @@ while True:
 
     
 
-    index = c.expect(['{', pexpect.TIMEOUT], timeout=0.001)
+    index = c.expect(['{', pexpect.TIMEOUT], timeout=0.5)
     if index==0:
         #print("Timeout condition reached. Breaking")
     
