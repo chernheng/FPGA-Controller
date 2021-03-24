@@ -404,10 +404,10 @@ void menu_screen() {
 
 
 #define TASK_1_TEXT "                                                                "
-#define TASK_2_TEXT "Flip the switches into the correct position!"
-#define TASK_3_TEXT "Press the buttons until the number reaches 0!"
+#define TASK_2_TEXT "Flip up the switches with lights above them!"
+#define TASK_3_TEXT "Press the button until the number displayed reaches 0!"
 #define TASK_4_TEXT "Use the switches to convert the number shown into binary!"
-#define TASK_5_TEXT "Press the button when the main LED lights up!"
+#define TASK_5_TEXT "Press the button when the moving LED is caught in between the stationary ones!"
 #define TASK_6_TEXT "Shake the device up and down!"
 
 
