@@ -141,7 +141,8 @@ int AcceptClient(int server_socket)
     int retVal = 0;
 
     while (1)
-    {
+    {  
+        char * empty_buffer = new char[MAX_COUNT_BYTES];
         //clear the socket set
         FD_ZERO(&readfds);
 
@@ -210,6 +211,8 @@ int AcceptClient(int server_socket)
         {
             break;
         }
+
+        // memset(empty_buffer,0,MAX_COUNT_BYTES);
     }
 
     return retVal;
@@ -552,7 +555,7 @@ int main()
             }
              
         }
-
+        printf("socket_descriptor size: %d, buffercon size: %d \n", (int) clients.socket_descriptor.size(),(int) clients.buffer_conn_req.size());
         //for each client connection:
         for (int i = 1; i < clients.socket_descriptor.size(); i++)
         {
