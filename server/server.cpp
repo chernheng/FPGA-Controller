@@ -137,7 +137,6 @@ int AcceptClient(int server_socket)
     int sd;
     int iResult;
     int client_number = 1;
-    char empty_buffer[MAX_COUNT_BYTES] = {0};
     int retVal = 0;
 
     while (1)
@@ -207,7 +206,7 @@ int AcceptClient(int server_socket)
         printf("Finished reading into buffer\n");
         retVal = 1;
         //until server detects max number of clients/players
-        if (client_number == 6)
+        if (client_number == 10)
         {
             break;
         }
@@ -693,60 +692,60 @@ int main()
 
         while (sent_pkt_type != GAME_END_PKT)
         {
-            for (int i = 0; i < client_index.size(); i++)
-            {
-                clients.buffer_usr_input.push_back(empty_buffer);
-                // if ((read(clients.socket_descriptor[i], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0)
-                // {
-                //     printf("Error in reading received bytes\n");
-                // }
-                printf("Attempting to receive udp game input packets from client...\n");
-                int n;
-                vec_cliaddr.push_back(cliaddr);
-                vec_cliaddr_len.push_back(sizeof(cliaddr));
-                if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[client_index[i]], &vec_cliaddr_len[client_index[i]])<0){
-                    printf("Error in udp bytes received\n");
-                }
-                //clients.buffer_usr_input[i][n] = '\0';
-                // if(n<0){
+            // for (int i = 0; i < client_index.size(); i++)
+            // {
+            //     clients.buffer_usr_input.push_back(empty_buffer);
+            //     // if ((read(clients.socket_descriptor[i], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0)
+            //     // {
+            //     //     printf("Error in reading received bytes\n");
+            //     // }
+            //     printf("Attempting to receive udp game input packets from client...\n");
+            //     int n;
+            //     vec_cliaddr.push_back(cliaddr);
+            //     vec_cliaddr_len.push_back(sizeof(cliaddr));
+            //     if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[client_index[i]], &vec_cliaddr_len[client_index[i]])<0){
+            //         printf("Error in udp bytes received\n");
+            //     }
+            //     //clients.buffer_usr_input[i][n] = '\0';
+            //     // if(n<0){
                     
-                // }else if (n==0){
-                //     printf("No udp bytes received\n");
-                // }
-                printf("Receive udp game input packets from client\n");
-                clients.buffer_usr_input[i][n]='\0';
-                for (int i=0; i<client_index.size(); i++){
-                    if(clients.address[client_index[i]].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
-                        printf("Processing user input\n");
-                        if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
-                        {
-                            //if client times-out - goes back to start of loop? (maybe case structure)
-                        }
-                    }
-                }
-                // printf("%s\n", inet_ntoa(clients.address[i].sin_addr));
-                //check whether received packet is from clients that are currently in the game
-                //TODO: client_in_game struct - unordered map? <client_address, player number?>
-                // int is_in_game = 0;
-                // for(int i=0; i<clients_in_game.size(); i++){
-                //     if(clients_in_game[i].sin_addr.s_addr==address.sin_addr.s_addr){
-                //         is_in_game = 1;
-                //     }
-                // }
-                // if (is_in_game==0){
-                //     //client is not in game - send reject msg back to client
-                //     char* buffer_send_reject;
-                //     int buffer_send_reject_size;
-                //     buffer_send_reject_size = reject_packet((client_server_pkt*)&buffer_send_reject);
-                //     send(new_socket, (char*)&buffer_send_reject , buffer_send_reject_size , 0 );
+            //     // }else if (n==0){
+            //     //     printf("No udp bytes received\n");
+            //     // }
+            //     printf("Receive udp game input packets from client\n");
+            //     clients.buffer_usr_input[i][n]='\0';
+            //     for (int i=0; i<client_index.size(); i++){
+            //         if(clients.address[client_index[i]].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
+            //             printf("Processing user input\n");
+            //             if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
+            //             {
+            //                 //if client times-out - goes back to start of loop? (maybe case structure)
+            //             }
+            //         }
+            //     }
+            //     // printf("%s\n", inet_ntoa(clients.address[i].sin_addr));
+            //     //check whether received packet is from clients that are currently in the game
+            //     //TODO: client_in_game struct - unordered map? <client_address, player number?>
+            //     // int is_in_game = 0;
+            //     // for(int i=0; i<clients_in_game.size(); i++){
+            //     //     if(clients_in_game[i].sin_addr.s_addr==address.sin_addr.s_addr){
+            //     //         is_in_game = 1;
+            //     //     }
+            //     // }
+            //     // if (is_in_game==0){
+            //     //     //client is not in game - send reject msg back to client
+            //     //     char* buffer_send_reject;
+            //     //     int buffer_send_reject_size;
+            //     //     buffer_send_reject_size = reject_packet((client_server_pkt*)&buffer_send_reject);
+            //     //     send(new_socket, (char*)&buffer_send_reject , buffer_send_reject_size , 0 );
 
-                // }
+            //     // }
 
-                // if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
-                // {
-                //     //if client times-out - goes back to start of loop? (maybe case structure)
-                // }
-            }
+            //     // if (process_usr_input(clients.buffer_usr_input[i], 1024) != 1)
+            //     // {
+            //     //     //if client times-out - goes back to start of loop? (maybe case structure)
+            //     // }
+            // }
             while(1){
                 for (int i = 0; i < client_index.size(); i++)
                 {
