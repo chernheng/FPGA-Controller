@@ -16,7 +16,7 @@ port = 8080
 sock.connect(('52.77.216.211', port))
 
 on_windows = "windows" in platform.uname()[0].lower()
-on_wsl = "microsoft" in platform.uname()[3].lower()
+on_wsl = ("microsoft" in platform.uname()[2].lower()) or ("microsoft" in platform.uname()[3].lower())
 
 if on_windows :
     print(">> On Windows.")
