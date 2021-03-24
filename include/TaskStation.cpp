@@ -6,7 +6,7 @@ TaskStation::TaskStation(int n /* = 0 */) {
   for (auto it : mp::map_stations) {
     x_stn.push_back(it.first);
     y_stn.push_back(it.second);
-    task.push_back(rand() % 6);
+    task.push_back(rand() % 5);
   }
   
   int rand_x;
