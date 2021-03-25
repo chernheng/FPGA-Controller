@@ -35,6 +35,17 @@ void game_loop() {
       info_panel_update_task(game::current_task);
     }
 
+    // End game
+    if (game::current_task==7) {
+      // uncomment these 2 lines to instead show Game Over Screen
+      // clear_map();
+      // readmap("maps/endgame1.txt");
+      print_splash_screen(map_screen);
+      getch();
+      endwin();
+      exit(0);
+    }
+
     // update player vision
     update_player_pos(game::players[game::player_index], map_screen);
 

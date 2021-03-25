@@ -409,6 +409,7 @@ void menu_screen() {
 #define TASK_4_TEXT "Use the switches to convert the number shown into binary!"
 #define TASK_5_TEXT "Press the button when the moving LED is caught in between the stationary ones!"
 #define TASK_6_TEXT "Shake the device up and down!"
+#define TASK_7_TEXT "Press any key on the keyboard to quit."
 
 
 //?  0            13     20           33
@@ -519,6 +520,13 @@ void info_panel_update_task(int task_id) {
     mvwprintw(info_screen, task_y_coord, 0, string("Complete Task : ").c_str());
     mvwprintw(info_screen, task_y_coord, 16, string(TASK_6_TEXT).c_str());
     wattroff(info_screen, COLOR_PAIR(INFO_ALERT_CLR));
+    break;
+  
+  case 7:
+    wattron(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
+    mvwprintw(info_screen, task_y_coord, 0, string("Game Over : ").c_str());
+    mvwprintw(info_screen, task_y_coord, 16, string(TASK_7_TEXT).c_str());
+    wattroff(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
     break;
   
   }

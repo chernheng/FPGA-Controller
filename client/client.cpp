@@ -479,7 +479,7 @@ int main(int argc, char* argv[]){
         }else if(pkt_type==GAME_END_PKT){
             //end game?
             clear_map();
-            readmap("maps/splash1.txt");
+            readmap("maps/endgame1.txt");
             print_splash_screen(map_screen);
             getch();
             endwin();
