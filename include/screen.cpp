@@ -198,7 +198,7 @@ void init_color_pairs() {
   init_pair(P3_CLR, COLOR_CYAN, COLOR_WHITE);
   init_pair(P4_CLR, COLOR_BLUE, COLOR_WHITE);
   init_pair(P5_CLR, COLOR_YELLOW, COLOR_WHITE);
-  init_pair(STNS_CLR, COLOR_GREEN, COLOR_WHITE);
+  init_pair(STNS_CLR, COLOR_WHITE, COLOR_GREEN);
   init_pair(VISIBLE_CLR, COLOR_RED, COLOR_RED);
   init_pair(WINDOW_CLR, COLOR_BLACK, COLOR_CYAN);
   init_pair(LANTERN_CLR, COLOR_YELLOW, COLOR_RED);
