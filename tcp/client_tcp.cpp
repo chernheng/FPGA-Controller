@@ -386,7 +386,7 @@ int main(int argc, char* argv[]){
         printf("Detected wrong packet response from server.\n");
     }
     //to test if other clients can connect while players are in game
-    //usleep(3*1000000);
+    usleep(3*1000000);
 
     //receive game ongoing coord. and game display from server - writes to buffer_recv
     //TODO: add timeout fn here - may be trying to connect to server when it is down
@@ -419,18 +419,23 @@ int main(int argc, char* argv[]){
         buffer_send_input_size = game_input_packet(&buffer_send_input, mac_address);
         // printf("Sending packets on udp\n");
         //send(udp_sockfd , (char *)&buffer_send_input , buffer_send_input_size , 0 ); 
-        if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
+
+        
+        //if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
+        if(send(sock , (char *)&buffer_send_input , buffer_send_input_size , 0 )<0){
             printf("Error in sending udp packet\n");
             cout << strerror(errno) << '\n';
             endwin();
             exit(EXIT_FAILURE);
         }
-        // printf("Sent udp packet of game input\n");
+        printf("Sent tcp packet of game input\n");
 
         socklen_t len = sizeof(serv_addr_udp);
         //receive client's coord. and other players' coord.
         //valread_game = read( sock , buffer_recv_game, MAX_COUNT_BYTES);
-        if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
+        //if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
+
+        if (read( sock , (char *)buffer_recv_game, MAX_COUNT_BYTES)<0 ){
             printf("Error in receiving udp packet\n");
             cout << strerror(errno) << '\n';
             endwin();
@@ -446,12 +451,14 @@ int main(int argc, char* argv[]){
             game_loop();
             wrefresh(map_screen);
             while(1) {
-                if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
-                printf("Error in sending udp packet\n");
-                cout << strerror(errno) << '\n';
-                endwin();
-                exit(EXIT_FAILURE);
-            }
+                //if (sendto(udp_sockfd , (const char *)&buffer_send_input , buffer_send_input_size , MSG_CONFIRM, (const struct sockaddr*)&serv_addr_udp, sizeof(serv_addr_udp))<0){
+                if (send(sock, (char *)&buffer_send_input, buffer_send_input_size, 0) < 0)
+                {
+                    printf("Error in sending udp packet\n");
+                    cout << strerror(errno) << '\n';
+                    endwin();
+                    exit(EXIT_FAILURE);
+                }
                 // print_station(ts,map_screen);
                 game_loop();
                 // vector<int>::iterator it_x = find(x.begin(),x.end(),players[0].x_coord);
@@ -463,7 +470,8 @@ int main(int argc, char* argv[]){
                 // }
 
                 wrefresh(map_screen);
-                if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
+                //if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
+                if (read( sock , (char *)buffer_recv_game, MAX_COUNT_BYTES)<0 ){
                     // printf("Error in receiving udp packet\n");
                     // endwin();
                     // cout << strerror(errno) << '\n';
@@ -479,7 +487,7 @@ int main(int argc, char* argv[]){
         }else if(pkt_type==GAME_END_PKT){
             //end game?
             clear_map();
-            readmap("maps/endgame1.txt");
+            readmap("maps/splash1.txt");
             print_splash_screen(map_screen);
             getch();
             endwin();
@@ -496,3 +504,5 @@ int main(int argc, char* argv[]){
 
 
 }
+    
+     
