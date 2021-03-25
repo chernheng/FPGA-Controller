@@ -31,7 +31,7 @@ namespace mp {
   extern int player_start_x;
   extern int player_start_y;
   extern int stations;
-  extern std::vector<std::pair<int, int>> map_stations;
+  extern std::vector<std::tuple<int, int, int>> map_stations;
 
   extern std::map<std::pair<int, int>, std::pair<int, int>> teleport_bindings;
 

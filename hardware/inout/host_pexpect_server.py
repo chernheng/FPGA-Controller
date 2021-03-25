@@ -142,7 +142,7 @@ while True:
 
     
 
-    index = c.expect(['{', pexpect.TIMEOUT], timeout=0.001)
+    index = c.expect(['{', pexpect.TIMEOUT], timeout=0.5)
     if index==0:
         #print("Timeout condition reached. Breaking")
     

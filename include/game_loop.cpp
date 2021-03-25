@@ -25,6 +25,7 @@ void game_loop() {
         game::doing_task = false;
         // update info panel
         info_panel_update_no_tasks();
+        info_panel_update_task(game::current_task);
       }
     }
 
