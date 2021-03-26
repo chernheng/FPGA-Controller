@@ -2,7 +2,7 @@
 #include <vector>
 #include "player.h"
 #include "map.h"
-#include "../client/client.hpp"
+#include "../tcp_client/client.hpp"
 #include <ncurses.h>
 
 extern WINDOW * map_screen; 
