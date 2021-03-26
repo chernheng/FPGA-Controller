@@ -813,8 +813,10 @@ int main()
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
-                            task =7;
                         }
+                    }
+                    if (ts[i].task.size() ==0){
+                        task = 7;
                     }
 
                     client_server_pkt buffer_send_game;
