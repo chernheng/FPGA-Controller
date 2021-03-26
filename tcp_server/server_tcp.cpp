@@ -237,7 +237,7 @@ int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
     send_packet.packet_type = GAME_START_PKT;
     send_packet.ch = user_id;
     user_id++;
-    for (int i = 0; i< 4;i++){
+    for (int i = 0; i< 5;i++){
         send_packet.ts_x[i] = ts.x_stn[i];
         send_packet.ts_y[i] = ts.y_stn[i];
         send_packet.task[i] = ts.task[i];
@@ -284,6 +284,8 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id,
                 // y_value--;
             }
         // }
+    }
+    if (!move){
         send_packet.task_number = task;
     }
     for (int i =0;i<client_index.size();i++){
@@ -650,7 +652,7 @@ int main()
 
 
 
-        readmap("maps/map1.txt");
+        readmap(MAP_FILE);
         TaskStation ts[client_index.size()];
         for (int i = 0; i<client_index.size();i++){
             ts[i] = TaskStation(i);
@@ -749,7 +751,9 @@ int main()
                 //     //if client times-out - goes back to start of loop? (maybe case structure)
                 // }
             }
+            int check[6] = {0,0,0,0,0,0};
             while(1){
+                bool not_done = false;
                 for (int i = 0; i < client_index.size(); i++)
                 {
                     // vector<int> x = ts[i].x_stn;
@@ -758,7 +762,7 @@ int main()
                     //sends game display during game
                     vector<int>::iterator it_x = find(ts[i].x_stn.begin(),ts[i].x_stn.end(),players[i].x_coord);
                     vector<int>::iterator it_y = find(ts[i].y_stn.begin(),ts[i].y_stn.end(),players[i].y_coord);
-                    if ((it_x - ts[i].x_stn.begin()) == (it_y - ts[i].y_stn.begin()) && it_x!=ts[i].x_stn.end() && it_y!=ts[i].y_stn.end()) {
+                    if (((it_x - ts[i].x_stn.begin()) == (it_y - ts[i].y_stn.begin())) && it_x!=ts[i].x_stn.end() && it_y!=ts[i].y_stn.end()) {
                         move = false;
                     }
                     std::map<int,std::string>::iterator client_it;
@@ -770,7 +774,7 @@ int main()
                     int8_t x_value;
                     int8_t y_value;
                     int8_t task_complete;
-                    int task;
+                    int task=1;
 
 
                     if(move){
@@ -790,11 +794,17 @@ int main()
                         y_value = fpga_pkt.y_coord;
                     }else if(move ==false) {
                         int index =(it_x - ts[i].x_stn.begin());
+                        check[i]++;
                         task = ts[i].task[index];
                         task = task+2;
                         char ta[2];
                         sprintf(ta,"%d",task);
-                        char sendchar = ta[0];
+                        char sendchar;
+                        if (check[i]<4){
+                            sendchar = ta[0];
+                        }else {
+                            sendchar = '1';
+                        }
                         printf("Sending char to fpga\n");
                         send(clients.socket_descriptor[FPGA_it->second], &sendchar, sizeof(sendchar), 0);
 
@@ -809,11 +819,16 @@ int main()
                         x_value = fpga_pkt.x_coord;
                         y_value = fpga_pkt.y_coord;
                         task_complete = fpga_pkt.task_complete;
-                        if(task_complete = 1){
+                        if(task_complete == 1 && check[i]>2){
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
+                            check[i]=0;
+                            task =1;
                         }
+                    }
+                    if(ts[i].task.size()==0){
+                        task =7;
                     }
 
                     client_server_pkt buffer_send_game;

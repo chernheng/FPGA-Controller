@@ -274,7 +274,7 @@ char process_game_start(char* buffer_recv_game_start, int buffer_size){
     int *x = pkt_received->ts_x;
     int *y = pkt_received->ts_y;
     int *task = pkt_received->task;
-    for (int i = 0; i<4;i++){
+    for (int i = 0; i<5;i++){
         game::stations.emplace_back(x[i],y[i]);
     }
     total_no_players = pkt_received->total_players;
@@ -375,7 +375,7 @@ int main(int argc, char* argv[]){
 
     //receive game start coord. and game display from server - writes to buffer_recv
     //TODO: add timeout fn here - may be trying to connect to server when it is down
-    readmap("maps/map1.txt");
+    readmap(MAP_FILE);
     char buffer_recv_game_start[MAX_COUNT_BYTES] = {0}; 
     int valread_game_start = read( sock , buffer_recv_game_start, MAX_COUNT_BYTES); 
     int user_id;
@@ -428,7 +428,7 @@ int main(int argc, char* argv[]){
             endwin();
             exit(EXIT_FAILURE);
         }
-        printf("Sent tcp packet of game input\n");
+        //printf("Sent tcp packet of game input\n");
 
         socklen_t len = sizeof(serv_addr_udp);
         //receive client's coord. and other players' coord.

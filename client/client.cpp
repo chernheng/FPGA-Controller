@@ -274,7 +274,7 @@ char process_game_start(char* buffer_recv_game_start, int buffer_size){
     int *x = pkt_received->ts_x;
     int *y = pkt_received->ts_y;
     int *task = pkt_received->task;
-    for (int i = 0; i<4;i++){
+    for (int i = 0; i<5;i++){
         game::stations.emplace_back(x[i],y[i]);
     }
     total_no_players = pkt_received->total_players;
@@ -407,7 +407,7 @@ int main(int argc, char* argv[]){
     // start_ncurses();
     // menu_screen();
     // read map
-    readmap("maps/map1.txt");
+    readmap(MAP_FILE);
     print_map_to_screen(map_screen);
     wrefresh(map_screen);
     copy_stations_to_map();
