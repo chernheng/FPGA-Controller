@@ -284,6 +284,8 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id,
                 // y_value--;
             }
         // }
+    }
+    if(!move){
         send_packet.task_number = task;
     }
     for (int i =0;i<client_index.size();i++){
@@ -767,7 +769,7 @@ int main()
                     int8_t x_value;
                     int8_t y_value;
                     int8_t task_complete;
-                    int task;
+                    int task=1;
 
 
                     if(move){
@@ -785,6 +787,7 @@ int main()
                         int process = process_fpga_coord(recv_data, &fpga_pkt);
                         x_value = fpga_pkt.x_coord;
                         y_value = fpga_pkt.y_coord;
+                        task =1;
                     }else if(move ==false) {
                         int index =(it_x - ts[i].x_stn.begin());
                         task = ts[i].task[index];
@@ -810,6 +813,7 @@ int main()
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
+                            task =7;
                         }
                     }
 
@@ -830,6 +834,7 @@ int main()
                     
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
+                    task =1;
                     
                 }
                 // for (int i = 0; i < clients.socket_descriptor.size(); i++)
