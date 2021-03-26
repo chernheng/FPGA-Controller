@@ -229,9 +229,9 @@ int main()
             return 1;
         }
 
-		alt_8 send_arr[4] = {
-            xy_dir[0] + 4,  // x dir {-4,4}
-            xy_dir[1] + 4,  // y dir {-4,4}
+		alt_u8 send_arr[4] = {
+            xy_dir[0],  // x dir {-4,4}
+            xy_dir[1],  // y dir {-4,4}
             nios_to_host_event, // enum 0-??
             '\n'        // packet delimiter (helps with readline())
 		};
@@ -239,7 +239,7 @@ int main()
 		#ifdef SEND_TO_PC
 //		DEBUG HOOK
 //		printf("%d|%x %d|%x %d|%x %x\n", fifo_data[0], fifo_data[0], fifo_data[1], fifo_data[1], fifo_data[2], fifo_data[2], nios_event);
-		printf("{%d %d %d}", send_arr[0], send_arr[1], send_arr[2]);
+		printf("{%x %x %x}", send_arr[0], send_arr[1], send_arr[2]);
 //		alt_printf("\n");
 //		write(1, send_arr, 13);	// Write 3*4+1 bytes = 13 bytes to 1 (stdout)
 		#endif
