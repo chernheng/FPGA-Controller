@@ -268,22 +268,22 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id,
 
     //to set-up packet_fields
     if (move){
-        // while (x_value || y_value) {
+        while (x_value || y_value) {
             if (x_value <0){
                 players[id].move(RT_DIR, 1);
-                // x_value++;
+                x_value++;
             } else if(x_value>0){
                 players[id].move(LF_DIR, 1);
-                // x_value--;
+                x_value--;
             }
             if (y_value <0){
                 players[id].move(UP_DIR, 1);
-                // y_value++;
+                y_value++;
             } else if(y_value>0){
                 players[id].move(DN_DIR, 1);
-                // y_value--;
+                y_value--;
             }
-        // }
+        }
     }
     if (!move){
         send_packet.task_number = task;
