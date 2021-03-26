@@ -237,7 +237,7 @@ int game_start_packet(client_server_pkt *buffer_send, TaskStation ts)
     send_packet.packet_type = GAME_START_PKT;
     send_packet.ch = user_id;
     user_id++;
-    for (int i = 0; i< 4;i++){
+    for (int i = 0; i< 5;i++){
         send_packet.ts_x[i] = ts.x_stn[i];
         send_packet.ts_y[i] = ts.y_stn[i];
         send_packet.task[i] = ts.task[i];
@@ -752,6 +752,7 @@ int main()
                 // }
             }
             while(1){
+                bool not_done = false;
                 for (int i = 0; i < client_index.size(); i++)
                 {
                     // vector<int> x = ts[i].x_stn;
@@ -772,7 +773,7 @@ int main()
                     int8_t x_value;
                     int8_t y_value;
                     int8_t task_complete;
-                    int task =1;
+                    int task=1;
 
 
                     if(move){
