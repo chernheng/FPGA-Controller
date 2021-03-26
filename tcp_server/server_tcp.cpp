@@ -751,9 +751,9 @@ int main()
                 //     //if client times-out - goes back to start of loop? (maybe case structure)
                 // }
             }
+            int check[6] = {0,0,0,0,0,0};
             while(1){
                 bool not_done = false;
-                int check[6] = {0,0,0,0,0,0};
                 for (int i = 0; i < client_index.size(); i++)
                 {
                     // vector<int> x = ts[i].x_stn;
@@ -818,6 +818,8 @@ int main()
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
+                            check[i]=0;
+                            task =1;
                         }
                     }
                     if(ts[i].task.size()==0){
