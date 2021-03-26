@@ -6,6 +6,7 @@
 #include <ctime>
 #include <map>
 
+#define MAP_FILE "maps/task_demo_small.txt"
 
 
 /**

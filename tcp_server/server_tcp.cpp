@@ -650,7 +650,7 @@ int main()
 
 
 
-        readmap("maps/map1.txt");
+        readmap(MAP_FILE);
         TaskStation ts[client_index.size()];
         for (int i = 0; i<client_index.size();i++){
             ts[i] = TaskStation(i);

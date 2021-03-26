@@ -375,7 +375,7 @@ int main(int argc, char* argv[]){
 
     //receive game start coord. and game display from server - writes to buffer_recv
     //TODO: add timeout fn here - may be trying to connect to server when it is down
-    readmap("maps/map1.txt");
+    readmap(MAP_FILE);
     char buffer_recv_game_start[MAX_COUNT_BYTES] = {0}; 
     int valread_game_start = read( sock , buffer_recv_game_start, MAX_COUNT_BYTES); 
     int user_id;
