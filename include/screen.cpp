@@ -523,6 +523,9 @@ void info_panel_update_task(int task_id) {
     break;
   
   case 7:
+    for (int j=0; j<mp::info_screen_width; j++) {
+      print_char_to_screen(info_screen, j, task_y_coord, ' ');
+    }
     wattron(info_screen, COLOR_PAIR(INFO_TEXT_CLR));
     mvwprintw(info_screen, task_y_coord, 0, string("Game Over : ").c_str());
     mvwprintw(info_screen, task_y_coord, 16, string(TASK_7_TEXT).c_str());
