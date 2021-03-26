@@ -758,7 +758,7 @@ int main()
                     //sends game display during game
                     vector<int>::iterator it_x = find(ts[i].x_stn.begin(),ts[i].x_stn.end(),players[i].x_coord);
                     vector<int>::iterator it_y = find(ts[i].y_stn.begin(),ts[i].y_stn.end(),players[i].y_coord);
-                    if ((it_x - ts[i].x_stn.begin()) == (it_y - ts[i].y_stn.begin()) && it_x!=ts[i].x_stn.end() && it_y!=ts[i].y_stn.end()) {
+                    if (((it_x - ts[i].x_stn.begin()) == (it_y - ts[i].y_stn.begin())) && it_x!=ts[i].x_stn.end() && it_y!=ts[i].y_stn.end()) {
                         move = false;
                     }
                     std::map<int,std::string>::iterator client_it;
@@ -770,7 +770,7 @@ int main()
                     int8_t x_value;
                     int8_t y_value;
                     int8_t task_complete;
-                    int task;
+                    int task =1;
 
 
                     if(move){
@@ -814,6 +814,9 @@ int main()
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
                         }
+                    }
+                    if(ts[i].task.size()==0){
+                        task =7;
                     }
 
                     client_server_pkt buffer_send_game;

@@ -428,7 +428,7 @@ int main(int argc, char* argv[]){
             endwin();
             exit(EXIT_FAILURE);
         }
-        printf("Sent tcp packet of game input\n");
+        //printf("Sent tcp packet of game input\n");
 
         socklen_t len = sizeof(serv_addr_udp);
         //receive client's coord. and other players' coord.
