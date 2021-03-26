@@ -90,9 +90,9 @@ if index==0:
     #print("Timeout condition reached. Breaking")
 
     c.expect(" ")
-    i = int(c.before, base=16)
+    i = int(c.before, base=16) - 4
     c.expect(" ")
-    j = int(c.before, base=16)
+    j = int(c.before, base=16) - 4
     c.expect("}")   # Now with line endings
     k = int(c.before, base=16)
     print(">> Obtained:", "i:", i, "j:", j, "k:", k)
@@ -147,9 +147,9 @@ while True:
         #print("Timeout condition reached. Breaking")
     
         c.expect(" ")
-        i = int(c.before, base=16)
+        i = int(c.before, base=16) - 4
         c.expect(" ")
-        j = int(c.before, base=16)
+        j = int(c.before, base=16) - 4
         c.expect("}")   # Now with line endings
         k = int(c.before, base=16)
         print(">> Obtained:", "i:", i, "j:", j, "k:", k)
