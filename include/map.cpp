@@ -18,7 +18,7 @@ namespace mp {
   int player_start_x=10;
   int player_start_y=5;
 
-  int stations = 4;
+  int stations = 5;
   std::vector<std::tuple<int, int, int>> map_stations;
   std::map<std::pair<int, int>, std::pair<int, int>> teleport_bindings;
 
