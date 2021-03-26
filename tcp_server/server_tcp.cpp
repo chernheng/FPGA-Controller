@@ -812,7 +812,7 @@ int main()
                         x_value = fpga_pkt.x_coord;
                         y_value = fpga_pkt.y_coord;
                         task_complete = fpga_pkt.task_complete;
-                        if(task_complete = 1){
+                        if(task_complete == 1){
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
