@@ -284,6 +284,8 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id,
                 // y_value--;
             }
         // }
+    }
+    if (!move){
         send_packet.task_number = task;
     }
     for (int i =0;i<client_index.size();i++){
