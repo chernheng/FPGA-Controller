@@ -799,7 +799,12 @@ int main()
                         task = task+2;
                         char ta[2];
                         sprintf(ta,"%d",task);
-                        char sendchar = ta[0];
+                        char sendchar;
+                        if (check[i]<4){
+                            sendchar = ta[0];
+                        }else {
+                            sendchar = '1';
+                        }
                         printf("Sending char to fpga\n");
                         send(clients.socket_descriptor[FPGA_it->second], &sendchar, sizeof(sendchar), 0);
 
@@ -814,7 +819,7 @@ int main()
                         x_value = fpga_pkt.x_coord;
                         y_value = fpga_pkt.y_coord;
                         task_complete = fpga_pkt.task_complete;
-                        if(task_complete == 1 && check[i]>3){
+                        if(task_complete == 1 && check[i]>2){
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
