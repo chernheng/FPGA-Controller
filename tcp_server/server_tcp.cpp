@@ -751,6 +751,7 @@ int main()
                 //     //if client times-out - goes back to start of loop? (maybe case structure)
                 // }
             }
+            int check[6] = {0,0,0,0,0,0};
             while(1){
                 bool not_done = false;
                 for (int i = 0; i < client_index.size(); i++)
@@ -793,6 +794,7 @@ int main()
                         y_value = fpga_pkt.y_coord;
                     }else if(move ==false) {
                         int index =(it_x - ts[i].x_stn.begin());
+                        check[i]++;
                         task = ts[i].task[index];
                         task = task+2;
                         char ta[2];
@@ -812,10 +814,12 @@ int main()
                         x_value = fpga_pkt.x_coord;
                         y_value = fpga_pkt.y_coord;
                         task_complete = fpga_pkt.task_complete;
-                        if(task_complete = 1){
+                        if(task_complete == 1 && check[i]>3){
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
+                            check[i]=0;
+                            task =1;
                         }
                     }
                     if(ts[i].task.size()==0){
