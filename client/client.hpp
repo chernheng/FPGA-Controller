@@ -41,9 +41,9 @@ struct client_server_pkt{
     char name[15];
     char ch;
     int task_number;
-    int ts_x[4];
-    int ts_y[4];
-    int task[4];
+    int ts_x[5];
+    int ts_y[5];
+    int task[5];
     int x_coord[6];
     int y_coord[6];
     char all_names[6][15];
