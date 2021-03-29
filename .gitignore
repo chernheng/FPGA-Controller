@@ -8,3 +8,6 @@ client/old_client
 client/network
 server/server
 .vscode/*
+*.o
+tcp_client/network
+tcp_server/server
