@@ -17,7 +17,7 @@
 #### Dependencies
 - Make sure ncurses is installed. If not, run `sudo apt install libncurses5-dev`
 - Ensure the `pexpect` python package is installed. If not, run `pip install pexpect` or `pip3 install pexpect` depending on your `pip` version.
-- Running the client and server requires either native Linux or WSL 2. Since Nios II for eclipse requires WSL 1 to run, you can either:
+- Running the client and server requires either native Linux or WSL 2. Since Nios II for Eclipse requires WSL 1 to run, you can either:
     - Program the FPGA using Nios II and Eclipse with WSL 1, then change to WSL 2
     - Modify one of the GNU coreutils in WSL 2 to get Nios II to work with WSL 2 (instructions are shown below)
 <details> <summary> Switching between WSL1 and WSL2 </summary>
@@ -30,7 +30,7 @@ To get `DISTRO_NAME`, you can run `wsl.exe --list`.
     
 <details> <summary> Modify WSL 2 to allow Nios II to work </summary>
     
-In WSL 2 run the command `which uname`. It should return `/bin/uname`.
+In WSL 2 run the command `which uname`. It should return something like `/bin/uname`. For the rest of these instructions, use the filepath returned by `which uname`.
 
 Rename the original `uname` command:
 ```
@@ -50,7 +50,7 @@ else
 fi
 ```
 
-Change the permissions of the new file: `sudo chmod 755 /bin/uname`
+Change the permissions of the new file: `sudo chmod 755 /bin/uname`. You should now be able to use Eclipse in WSL2 as if you were in WSL1.
 
 </details>
 
