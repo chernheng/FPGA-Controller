@@ -339,7 +339,7 @@ int main(int argc, char* argv[]){
         buffer_send_input_size = game_input_packet(&buffer_send_input, mac_address);
         
         if(send(sock , (char *)&buffer_send_input , buffer_send_input_size , 0 )<0){
-            printf("Error in sending udp packet\n");
+            printf("Error in sending tcp packet\n");
             cout << strerror(errno) << '\n';
             endwin();
             exit(EXIT_FAILURE);
@@ -350,7 +350,7 @@ int main(int argc, char* argv[]){
         std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
         if (read( sock , (char *)buffer_recv_game, MAX_COUNT_BYTES)<0 ){
-            printf("Error in receiving udp packet\n");
+            printf("Error in receiving tcp packet\n");
             cout << strerror(errno) << '\n';
             endwin();
             exit(EXIT_FAILURE);
@@ -372,7 +372,7 @@ int main(int argc, char* argv[]){
             while(1) {
                 if (send(sock, (char *)&buffer_send_input, buffer_send_input_size, 0) < 0)
                 {
-                    printf("Error in sending udp packet\n");
+                    printf("Error in sending tcp packet\n");
                     cout << strerror(errno) << '\n';
                     endwin();
                     exit(EXIT_FAILURE);
