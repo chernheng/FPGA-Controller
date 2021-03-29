@@ -19,7 +19,14 @@
 - Running the client and server requires either native Linux or WSL 2. Since Nios II for eclipse requires WSL 1 to run, you can either:
     - Program the FPGA using Nios II and Eclipse with WSL 1, then change to WSL 2
     - Modify one of the GNU coreutils in WSL 2 to get Nios II to work with WSL 2 (instructions are shown below)
+<details> <summary> Switching between WSL1 and WSL2 </summary>
+    
+To swap from WSL1 to WSL2 and vice-versa, simply run `wsl.exe --set-version $DISTRO_NAME $DISTRO_VER` in PowerShell, where `DISTRO_NAME` is the name of your Linux distribution on your computer (eg. `Ubuntu-20.04`) and `DISTRO_VER` is the version of WSL you wish to change to.
 
+To get `DISTRO_NAME`, you can run `wsl.exe --list`.
+
+</details>
+    
 <details> <summary> Modify WSL 2 to allow Nios II to work </summary>
     
 In WSL 2 run the command `which uname`. It should return `/bin/uname`.
@@ -45,9 +52,6 @@ fi
 Change the permissions of the new file: `sudo chmod 755 /bin/uname`
 
 </details>
-
-Else, to swap from WSL1 to WSL2 and vice-versa, simply run `wsl.exe --set-version $DISTRO_NAME $DISTRO_VER` in PowerShell, where `DISTRO_NAME` is the name of your Linux distribution on your computer (eg. `Ubuntu-20.04`) and `DISTRO_VER` is the version of WSL you wish to change to.
-To get `DISTRO_NAME`, you can run `wsl.exe --list`.
 
 #### Server
 - To get the Server up and running, navigate to the `tcp_server` folder. 
