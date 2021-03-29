@@ -16,6 +16,7 @@
 
 #### Dependencies
 - Make sure ncurses is installed. If not, run `sudo apt install libncurses5-dev`
+- Ensure the `pexpect` python package is installed. If not, run `pip install pexpect` or `pip3 install pexpect` depending on your `pip` version.
 - Running the client and server requires either native Linux or WSL 2. Since Nios II for eclipse requires WSL 1 to run, you can either:
     - Program the FPGA using Nios II and Eclipse with WSL 1, then change to WSL 2
     - Modify one of the GNU coreutils in WSL 2 to get Nios II to work with WSL 2 (instructions are shown below)
