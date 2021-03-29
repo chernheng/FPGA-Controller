@@ -713,10 +713,18 @@ int main()
                 int n;
                 vec_cliaddr.push_back(cliaddr);
                 vec_cliaddr_len.push_back(sizeof(cliaddr));
+
+                std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
                 //if(n = recvfrom(udp_fd, clients.buffer_usr_input[i], MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr *)&vec_cliaddr[client_index[i]], &vec_cliaddr_len[client_index[i]])<0){
                 if ((n = read(clients.socket_descriptor[client_index[i]], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0){
                     printf("Error in udp bytes received\n");
                 }
+
+                std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+                std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+                std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
+
                 //clients.buffer_usr_input[i][n] = '\0';
                 // if(n<0){
                     
@@ -847,7 +855,7 @@ int main()
                     //send game in process corrd and display to client
                     //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
                     
-                    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+                    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
                     //if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[client_index[i]], vec_cliaddr_len[client_index[i]])<0){
                     if (send(clients.socket_descriptor[client_index[i]], (const char *)&buffer_send_game, buffer_send_game_size, 0)<0){
                         perror("sending udp bytes failed"); 
@@ -858,10 +866,10 @@ int main()
                     
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
-                    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+                    // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-                    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-                    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
+                    // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+                    // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
                     
                 }
                 // for (int i = 0; i < clients.socket_descriptor.size(); i++)
