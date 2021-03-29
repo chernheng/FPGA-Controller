@@ -64,7 +64,7 @@ Change the permissions of the new file: `sudo chmod 755 /bin/uname`
     2. Run `./network`.
     3. Enter IP address of Server and player name when prompted.
 - To get the FPGA Host up and running:
-    1. Run `./hardware/inout/host_pexpect_server.py` in base directory.
+    1. Run `python3 host_pexpect_server.py` in the `tcp_client` folder.
     2. To ensure the FPGA is in a known state, reset it by pressing `KEY0` immediately after running the Python script.
 
 - Subsequently, look at the Client screen. Your FPGA should display a `0` on `HEX5`. When this happens, press `KEY1`.
