@@ -435,12 +435,20 @@ int main(int argc, char* argv[]){
         //valread_game = read( sock , buffer_recv_game, MAX_COUNT_BYTES);
         //if (recvfrom(udp_sockfd, (char *)buffer_recv_game, MAX_COUNT_BYTES, MSG_WAITALL, (struct sockaddr*)&serv_addr_udp, &len)<0){
 
+        std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
         if (read( sock , (char *)buffer_recv_game, MAX_COUNT_BYTES)<0 ){
             printf("Error in receiving udp packet\n");
             cout << strerror(errno) << '\n';
             endwin();
             exit(EXIT_FAILURE);
         }
+
+        std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+        std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+        std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
+
         // printf("Received udp packets from server\n");
         init_info_panel();
         copy_stations_to_map();
