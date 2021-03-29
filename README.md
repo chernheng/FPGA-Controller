@@ -15,7 +15,16 @@
 
 ### Software
 #### Server
-- To get the Server up and running, navigate to the tcp_server folder and run `make`. Run `./server` afterwards.
+- To get the Server up and running, navigate to the tcp_server folder. 
+    1. Run `make`. 
+    2. Run `./server`.
 
 #### Client
-- To get the Client up and running, navigate to the tcp_client folder and run `make network`. Run `./network` afterwards.
+- To get the Client up and running, navigate to the tcp_client folder.
+    1. Run `make network`. 
+    2. Run `./network`.
+    3. Enter IP address of Server and player name when prompted.
+
+### FPGA Host
+- To get the FPGA Host up and running:
+    1. Run `./hardware/inout/host_pexpect_server.py` in base directory.
