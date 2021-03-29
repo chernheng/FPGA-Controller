@@ -268,24 +268,24 @@ int game_process_packet(client_server_pkt *buffer_send, player *players, int id,
 
     //to set-up packet_fields
     if (move){
-        // while (x_value || y_value) {
+        while (x_value || y_value) {
             if (x_value <0){
                 players[id].move(RT_DIR, 1);
-                // x_value++;
+                x_value++;
             } else if(x_value>0){
                 players[id].move(LF_DIR, 1);
-                // x_value--;
+                x_value--;
             }
             if (y_value <0){
                 players[id].move(UP_DIR, 1);
-                // y_value++;
+                y_value++;
             } else if(y_value>0){
                 players[id].move(DN_DIR, 1);
-                // y_value--;
+                y_value--;
             }
-        // }
+        }
     }
-    if(!move){
+    if (!move){
         send_packet.task_number = task;
     }
     for (int i =0;i<client_index.size();i++){
@@ -748,6 +748,7 @@ int main()
                 //     //if client times-out - goes back to start of loop? (maybe case structure)
                 // }
             }
+            int check[6] = {0,0,0,0,0,0};
             while(1){
                 for (int i = 0; i < client_index.size(); i++)
                 {
@@ -809,10 +810,12 @@ int main()
                         x_value = fpga_pkt.x_coord;
                         y_value = fpga_pkt.y_coord;
                         task_complete = fpga_pkt.task_complete;
-                        if(task_complete = 1){
+                        if(task_complete == 1 && check[i]>2){
                             ts[i].x_stn.erase(it_x);
                             ts[i].y_stn.erase(it_y);
                             ts[i].task.erase(ts[i].task.begin()+index);
+                            check[i]=0;
+                            task =1;
                         }
                     }
                     if (ts[i].task.size() ==0){
