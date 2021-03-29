@@ -750,6 +750,7 @@ int main()
             }
             int check[6] = {0,0,0,0,0,0};
             while(1){
+                bool not_done = false;
                 for (int i = 0; i < client_index.size(); i++)
                 {
                     // vector<int> x = ts[i].x_stn;
@@ -758,7 +759,7 @@ int main()
                     //sends game display during game
                     vector<int>::iterator it_x = find(ts[i].x_stn.begin(),ts[i].x_stn.end(),players[i].x_coord);
                     vector<int>::iterator it_y = find(ts[i].y_stn.begin(),ts[i].y_stn.end(),players[i].y_coord);
-                    if ((it_x - ts[i].x_stn.begin()) == (it_y - ts[i].y_stn.begin()) && it_x!=ts[i].x_stn.end() && it_y!=ts[i].y_stn.end()) {
+                    if (((it_x - ts[i].x_stn.begin()) == (it_y - ts[i].y_stn.begin())) && it_x!=ts[i].x_stn.end() && it_y!=ts[i].y_stn.end()) {
                         move = false;
                     }
                     std::map<int,std::string>::iterator client_it;
@@ -791,11 +792,17 @@ int main()
                         task =1;
                     }else if(move ==false) {
                         int index =(it_x - ts[i].x_stn.begin());
+                        check[i]++;
                         task = ts[i].task[index];
                         task = task+2;
                         char ta[2];
                         sprintf(ta,"%d",task);
-                        char sendchar = ta[0];
+                        char sendchar;
+                        if (check[i]<4){
+                            sendchar = ta[0];
+                        }else {
+                            sendchar = '1';
+                        }
                         printf("Sending char to fpga\n");
                         send(clients.socket_descriptor[FPGA_it->second], &sendchar, sizeof(sendchar), 0);
 
@@ -818,8 +825,8 @@ int main()
                             task =1;
                         }
                     }
-                    if (ts[i].task.size() ==0){
-                        task = 7;
+                    if(ts[i].task.size()==0){
+                        task =7;
                     }
 
                     client_server_pkt buffer_send_game;
@@ -838,7 +845,7 @@ int main()
                         exit(EXIT_FAILURE); 
                         //printf("Error in udp bytes sent\n");
                     }
-                    
+                    printf("Sent packet to client'n");
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
                     task =1;
