@@ -14,6 +14,39 @@
 
 
 ### Software
+
+#### Dependencies
+- Make sure ncurses is installed
+- Running the client and server requires either native Linux or WSL 2. Since Nios II for eclipse requires WSL 1 to run, you can either:
+    - Program the FPGA using Nios II and Eclipse with WSL 1, then change to WSL 2
+    - Modify one of the GNU coreutils in WSL 2 to get Nios II to work with WSL 2 (instructions are shown below)
+
+<details> <summary> Modify WSL 2 to allow Nios II to work </summary>
+    
+In WSL 2 run the command `which uname`. It should return `/bin/uname`.
+
+Rename the original `uname` command:
+```
+sudo mv /bin/uname /bin/uname_original
+```
+Create a bash script `/bin/uname` in its place and insert the following contents:
+
+```bash
+#!/bin/bash
+PARENT_COMMAND=$(ps -o comm=$PPID)
+# echo $PARENT_COMMAND >> ~/log.txt
+TXT=$(uname_original $1)
+if [[ $PARENT_COMMAND =~ "nios" ]] || [[ $PARENT_COMMAND =~ "create-this" ]] || [[ $PARENT_COMMAND =~ "make" ]]; then
+        echo $TXT"-Microsoft"
+else
+        echo $TXT
+fi
+```
+
+Change the permissions of the new file: `sudo chmod 755 /bin/uname`
+
+</details>
+
 #### Server
 - To get the Server up and running, navigate to the `tcp_server` folder. 
     1. Run `make`. 
