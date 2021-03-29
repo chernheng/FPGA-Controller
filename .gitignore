@@ -7,3 +7,4 @@ client/client
 client/old_client
 client/network
 server/server
+.vscode/*
