@@ -640,7 +640,7 @@ int main()
             {
                 clients.buffer_usr_input.push_back(empty_buffer);
 
-                printf("Attempting to receive udp game input packets from client...\n");
+                printf("Attempting to receive tcp game input packets from client...\n");
                 printf("Client index: %d\n", client_index[i]);
                 printf("socket descriptor: %d\n", clients.socket_descriptor[client_index[i]]);
                 int n;
@@ -650,15 +650,15 @@ int main()
                 std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
         
                 if ((n = read(clients.socket_descriptor[client_index[i]], clients.buffer_usr_input[i], MAX_COUNT_BYTES)) < 0){
-                    printf("Error in udp bytes received\n");
+                    printf("Error in tcp bytes received\n");
                 }
 
                 std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
-                std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-                std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
+                // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+                // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
 
-                printf("Receive udp game input packets from client\n");
+                printf("Receive tcp game input packets from client\n");
                 clients.buffer_usr_input[i][n]='\0';
                 for (int i=0; i<client_index.size(); i++){
                     if(clients.address[client_index[i]].sin_addr.s_addr==cliaddr.sin_addr.s_addr){
