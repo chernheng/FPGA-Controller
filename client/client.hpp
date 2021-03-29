@@ -49,7 +49,6 @@ struct client_server_pkt{
     int y_coord[6];
     char all_names[6][15];
     int total_players;
-    //TODO: add on what is needed
 };
 
 struct fpga_server_pkt{

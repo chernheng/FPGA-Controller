@@ -56,30 +56,6 @@ struct clients_info{
     vector<int> buffer_send_game_size;
 };
 
-// struct client_server_pkt{
-//     char client_mac_address[14];
-//     uint8_t packet_type;
-//     char name[15];
-//     char ch;
-//     int ts_x[4];
-//     int ts_y[4];
-//     int task[4];
-//     int x_coord[2];
-//     int y_coord[2];
-//     //TODO: add on what is needed
-
-// };
-
-
-// struct fpga_server_pkt{
-//     uint8_t fpga_or_host;
-//     char mac_addr[6];
-//     int8_t x_coord;
-//     int8_t y_coord;
-//     int8_t task_complete;
-//     // char mac_addr[6];
-// };
-
 int create_connection_socket();
 
 int create_udp_connection_socket();
