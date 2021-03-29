@@ -458,10 +458,10 @@ int main()
 
     printf("\nSetting up UDP socket\n");
     printf("====================================\n");
-    if (create_udp_connection_socket() != 1)
-        {
+//    if (create_udp_connection_socket() != 1)
+  //      {
             //socket is not set-up properly 
-        }
+    //    }
 
     while (1)
     {
