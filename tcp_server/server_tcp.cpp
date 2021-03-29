@@ -490,6 +490,8 @@ int main()
 
     while (1)
     {
+        // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+        
         //when a connection arrives, open a new socket to communicate with it
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address,
                                  (socklen_t *)&addrlen)) < 0)
@@ -499,6 +501,10 @@ int main()
         }
         printf("\nFinished setting up socket.\n");
         printf("====================================\n\n");
+        // std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+        // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+        // std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
         //read in clients's ip address?
         clients.address.push_back(address);
         clients.address_len.push_back(addrlen);
@@ -759,6 +765,7 @@ int main()
                     // vector<int> x = ts[i].x_stn;
                     // vector<int> y = ts[i].y_stn;
                     bool move = true;
+                    
                     //sends game display during game
                     vector<int>::iterator it_x = find(ts[i].x_stn.begin(),ts[i].x_stn.end(),players[i].x_coord);
                     vector<int>::iterator it_y = find(ts[i].y_stn.begin(),ts[i].y_stn.end(),players[i].y_coord);
@@ -840,6 +847,7 @@ int main()
                     //send game in process corrd and display to client
                     //send(clients.socket_descriptor[i], clients.buffer_send_game[i], clients.buffer_send_game_size[i], 0);
                     
+                    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
                     //if(sendto(udp_fd, (const char *)&buffer_send_game, buffer_send_game_size, MSG_CONFIRM, (const struct sockaddr *) &vec_cliaddr[client_index[i]], vec_cliaddr_len[client_index[i]])<0){
                     if (send(clients.socket_descriptor[client_index[i]], (const char *)&buffer_send_game, buffer_send_game_size, 0)<0){
                         perror("sending udp bytes failed"); 
@@ -850,6 +858,10 @@ int main()
                     
                     sent_pkt_type = process_packet((char *)&buffer_send_game);
                     printf("loop number: %d\n", i);
+                    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+                    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
+                    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds>(end - begin).count() << "[ns]" << std::endl;
                     
                 }
                 // for (int i = 0; i < clients.socket_descriptor.size(); i++)
