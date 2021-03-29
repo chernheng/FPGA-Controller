@@ -8,12 +8,12 @@ import struct
 import numpy as np
 import re, uuid
 import binascii
-
+import datetime
 
 # Create a socket object (on local host)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 port = 8080
-sock.connect(('13.250.125.188', port))
+sock.connect(('13.212.116.56', port))
 #00:0c:29:8e:fd:82
 
 on_windows = "windows" in platform.uname()[0].lower()
@@ -89,8 +89,10 @@ send_data = dataFromServer.decode()
 print(">> Got", send_data, "from server.")
 
 #send to fpga only if not at task station
+print(">> Sent", send_data, "with bytes to fgpa.")
+start = datetime.datetime.now()
 x = c.send(send_data)
-print(">> Sent", send_data, "with", x, "bytes to fgpa.")
+
 
 index = c.expect(['{', pexpect.TIMEOUT], timeout=20)
 if index==0:
@@ -101,8 +103,12 @@ if index==0:
     j = int(c.before, base=16)
     c.expect("}")   # Now with line endings
     k = int(c.before, base=16)
+    end = datetime.datetime.now()
     print(">> Obtained:", "i:", i, "j:", j, "k:", k)
     pause = 0
+    delta = end-start
+    print(">> Time (ms):", int(delta.total_seconds() * 1000))
+
 else:
     print(">> Didn't press ack in time")
     exit(1)
@@ -145,9 +151,14 @@ while True:
 
     #send to fpga only if not at task station
     if pause==0:
+        print(">> Sent", send_data, "with bytes to fgpa.")
+        start_1 = datetime.datetime.now()
         x = c.send(send_data)
-        print(">> Sent", send_data, "with", x, "bytes to fgpa.")
+        
     
+
+
+
     index = c.expect(['{', pexpect.TIMEOUT], timeout=0.5)
     if index==0:
         #print("Timeout condition reached. Breaking")
@@ -157,8 +168,13 @@ while True:
         j = int(c.before, base=16) # (offset)
         c.expect("}")   # Now with line endings
         k = int(c.before, base=16)
+        end_1 = datetime.datetime.now()
         print(">> Obtained:", "i:", i, "j:", j, "k:", k)
         pause = 0
+        
+        delta_1 = end_1-start_1
+        print(">> Time (ms):", int(delta_1.total_seconds() * 1000))
+        # print(end_1 - start_1)
     else:
         i=0
         j=0
