@@ -18,7 +18,7 @@ sock.connect((ip_addr, port))
 #00:0c:29:8e:fd:82
 
 on_windows = "windows" in platform.uname()[0].lower()
-on_wsl = "microsoft" in platform.uname()[3].lower()
+on_wsl = "microsoft" in platform.uname()[2].lower()
 
 if on_windows :
     print(">> On Windows.")
