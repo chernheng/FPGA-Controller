@@ -45,23 +45,15 @@ i=0
 j=0
 k=0
 
-#Comment out this code if using native linux
-mac_addr_input = input ("Enter mac address :")
-mac_addr = binascii.unhexlify(mac_addr_input.replace(':', ''))
-print("mac address in bytes :", mac_addr)
-#
-
 pkt_header = np.int8(1)
 mac_int = uuid.getnode()
 
-#Comment out this code if using WSL 1
-#mac_addr = bytearray(mac_int.to_bytes(6, "big"))
-#print(">> Mac addr: ", mac_addr)
+mac_addr = bytearray(mac_int.to_bytes(6, "big"))
+print(">> Mac addr: ", mac_addr)
 #
 data_send = [i, j, k]
 data_bytes = bytearray()
 data_bytes += pkt_header.tobytes()
-# data_bytes += mac_addr
 data_bytes += mac_addr
 
 # printing the value of unique MAC 
@@ -121,14 +113,9 @@ while True:
     pkt_header = np.int8(1)
     mac_int = uuid.getnode()
 
-    #Comment out this code if using WSL 1
-    #mac_addr = bytearray(mac_int.to_bytes(6, "big"))
-    #print(">> Mac addr: ", mac_addr)
-    #
     data_send = [i, j, k]
     data_bytes = bytearray()
     data_bytes += pkt_header.tobytes()
-    # data_bytes += mac_addr
     data_bytes += mac_addr
     for data_packet in data_send:
         data_packet = bytearray( data_packet.to_bytes(1, "big") )   # Network byte-order is big-endian, so we specify this.
@@ -155,9 +142,6 @@ while True:
         start_1 = datetime.datetime.now()
         x = c.send(send_data)
         
-    
-
-
 
     index = c.expect(['{', pexpect.TIMEOUT], timeout=0.5)
     if index==0:
@@ -180,26 +164,7 @@ while True:
         j=0
         k=0
         print(">> Sending data so server won't fomo")
-        pause = 1
-
-    # pkt_header = np.int8(1)
-    # mac_int = uuid.getnode()
-    # mac_addr = bytearray(mac_int.to_bytes(6, "big"))
-    # print(">> Mac addr: ", mac_addr)
-
-    # data_send = [i, j, k]
-    # data_bytes = bytearray()
-    # data_bytes += pkt_header.tobytes()
-    # # data_bytes += mac_addr
-    # data_bytes += mac_addr
-    # for data_packet in data_send:
-    #     data_packet = bytearray( data_packet.to_bytes(1, "big") )   # Network byte-order is big-endian, so we specify this.
-    #     data_bytes += data_packet
-    
-
-    # sock.send(data_bytes)
-    # print(">> Sent", data_bytes, "to server")
-     
+        pause = 1    
   
 sock.close()
 c.kill(2)
