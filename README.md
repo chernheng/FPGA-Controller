@@ -68,6 +68,7 @@ Change the permissions of the new file: `sudo chmod 755 /bin/uname`. You should 
     1. Run `python3 host_pexpect_server.py` in the `tcp_client` folder.
     2. Enter IP address of Server, the same one as before.
     3. To ensure the FPGA is in a known state, reset it by pressing `KEY1` immediately after running the Python script.
+    4. If for some unforseen reason, the system crashes, do check Task Manager for stray instances of `nios2-terminal` to ensure that the process has been killed. Otherwise, further errors might occur down the line.
 
 - Subsequently, look at the Client screen. Your FPGA should display a `0` on `HEX5`. When this happens, press `KEY0`.
 - Enjoy the game!
