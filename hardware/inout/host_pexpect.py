@@ -32,8 +32,8 @@ while True:
         send_data = '1'
     if send_data == 'q':
         break
-    elif len(send_data) != 1:
-        print("Send only one character.")
+    elif len(send_data) != 2:
+        print("Send two characters.")
         continue
     x = c.send(send_data)
     print(">> Sent", send_data, "with", x, "bytes to fgpa.")
