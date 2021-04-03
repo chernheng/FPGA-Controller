@@ -1,5 +1,8 @@
 ﻿# info-proc-cw : Team 1
 
+https://user-images.githubusercontent.com/59867245/113486285-859c4f00-94e4-11eb-8748-5fc138a71751.mp4
+
+
 ## Instructions
 ### Hardware
 - To deploy the hardware, unarchive `260321_updated_fir_hardware.qar` in Quartus. Compile the design and upload it to the FPGA.
