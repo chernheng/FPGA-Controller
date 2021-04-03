@@ -1,6 +1,6 @@
 ﻿# info-proc-cw : Team 1
 
-https://user-images.githubusercontent.com/59867245/113486285-859c4f00-94e4-11eb-8748-5fc138a71751.mp4
+![Video](https://user-images.githubusercontent.com/59867245/113486285-859c4f00-94e4-11eb-8748-5fc138a71751.mp4)
 
 
 ## Instructions
